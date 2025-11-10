@@ -1,0 +1,53 @@
+﻿@inject IAuthService AuthService
+@inject NavigationManager Navigation
+
+<div class="page">
+    @if (isAuthenticated)
+    {
+        <div class="sidebar">
+            <NavMenu />
+        </div>
+    }
+
+    <main>
+        @if (isAuthenticated)
+        {
+            <div class="top-row px-4 bg-primary text-white">
+                <div class="d-flex justify-content-between w-100">
+                    <small>StockhubWeb - Система инвентаризации</small>
+                    <div>
+                        <span class="me-3">Привет, @user?.FirstName!</span>
+                        <button class="btn btn-sm btn-outline-light" @onclick="Logout">
+                            <i class="fas fa-sign-out-alt me-1"></i>
+                            Выйти
+                        </button>
+                    </div>
+                </div>
+            </div>
+        }
+
+        <article class="content px-4">
+            @Body
+        </article>
+    </main>
+</div>
+
+@code {
+    private bool isAuthenticated = false;
+    private User? user;
+
+    [Parameter]
+    public RenderFragment? Body { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        isAuthenticated = await AuthService.IsAuthenticatedAsync();
+        user = await AuthService.GetCurrentUserAsync();
+    }
+
+    private async Task Logout()
+    {
+        await AuthService.LogoutAsync();
+        Navigation.NavigateTo("/auth/login", true);
+    }
+}

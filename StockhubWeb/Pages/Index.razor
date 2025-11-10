@@ -1,0 +1,38 @@
+﻿@page "/"
+@inject NavigationManager Navigation
+
+<div class="auth-container">
+    <div class="auth-card text-center">
+        <div class="auth-header">
+            <h1><i class="fas fa-boxes me-2"></i>StockhubWeb</h1>
+            <p class="lead">Система управления инвентаризацией</p>
+        </div>
+        <div class="auth-body">
+            <div class="mb-4">
+                <p>Добро пожаловать в современную систему управления складами и инвентарем</p>
+            </div>
+            <div class="d-grid gap-3">
+                <button class="btn btn-primary btn-lg" @onclick="NavigateToLogin">
+                    <i class="fas fa-sign-in-alt me-2"></i>
+                    Войти в систему
+                </button>
+                <button class="btn btn-outline-primary btn-lg" @onclick="NavigateToRegister">
+                    <i class="fas fa-user-plus me-2"></i>
+                    Зарегистрироваться
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private void NavigateToLogin()
+    {
+        Navigation.NavigateTo("/login", forceLoad: true);
+    }
+
+    private void NavigateToRegister()
+    {
+        Navigation.NavigateTo("/register", forceLoad: true);
+    }
+}

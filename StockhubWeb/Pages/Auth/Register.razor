@@ -1,0 +1,204 @@
+﻿@page "/register"
+@using StockhubWeb.Models
+@using StockhubWeb.Services
+@inject IAuthService AuthService
+@inject NavigationManager Navigation
+
+<div class="auth-container">
+    <div class="auth-card">
+        <div class="auth-header">
+            <h2><i class="fas fa-user-plus me-2"></i>Регистрация</h2>
+            <p class="text-muted">Создайте новый аккаунт</p>
+        </div>
+
+        <div class="auth-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">Имя *</label>
+                        <input @bind="registerModel.FirstName" class="form-control" placeholder="Введите имя" />
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">Фамилия *</label>
+                        <input @bind="registerModel.LastName" class="form-control" placeholder="Введите фамилию" />
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" @bind="hasNoMiddleName" />
+                    <label class="form-check-label">Нет отчества</label>
+                </div>
+            </div>
+
+            @if (!hasNoMiddleName)
+            {
+                <div class="mb-3">
+                    <label class="form-label">Отчество</label>
+                    <input @bind="registerModel.MiddleName" class="form-control" placeholder="Введите отчество" />
+                </div>
+            }
+
+            <div class="mb-3">
+                <label class="form-label">Email *</label>
+                <input type="email" @bind="registerModel.Email" class="form-control" placeholder="Введите email" />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Пароль *</label>
+                <input type="password" @bind="registerModel.Password" class="form-control" placeholder="Введите пароль" />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Подтверждение пароля *</label>
+                <input type="password" @bind="registerModel.ConfirmPassword" class="form-control" placeholder="Подтвердите пароль" />
+            </div>
+
+            @if (isLoading)
+            {
+                <button class="btn btn-success w-100 mb-3" disabled="disabled">
+                    <span class="spinner-border spinner-border-sm me-2"></span>
+                    Регистрация...
+                </button>
+            }
+            else
+            {
+                <button class="btn btn-success w-100 mb-3" @onclick="PerformRegistration">
+                    Зарегистрироваться
+                </button>
+            }
+
+            <div class="text-center">
+                <span class="text-muted">Уже есть аккаунт? </span>
+                <a href="/login" class="btn btn-link p-0" @onclick="NavigateToLogin">
+                    Войти
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (showError)
+{
+    <div class="alert alert-danger alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3" role="alert">
+        <strong>Ошибка!</strong> @errorMessage
+        <button type="button" class="btn-close" @onclick="DismissError"></button>
+    </div>
+}
+
+@code {
+    private RegisterModel registerModel = new();
+    private bool isLoading = false;
+    private bool showError = false;
+    private string errorMessage = string.Empty;
+    private bool hasNoMiddleName = false;
+
+    protected override void OnInitialized()
+    {
+        // При загрузке страницы регистрации проверяем, не авторизован ли пользователь
+        CheckAuthentication();
+    }
+
+    private async void CheckAuthentication()
+    {
+        var isAuthenticated = await AuthService.IsAuthenticatedAsync();
+        if (isAuthenticated)
+        {
+            Navigation.NavigateTo("/dashboard/role-selection");
+        }
+    }
+
+    private async Task PerformRegistration()
+    {
+        if (!ValidateForm())
+            return;
+
+        isLoading = true;
+        showError = false;
+
+        // Обновляем модель на основе состояния тумблера
+        registerModel.HasMiddleName = !hasNoMiddleName;
+        if (hasNoMiddleName)
+        {
+            registerModel.MiddleName = null;
+        }
+
+        var result = await AuthService.RegisterUserAsync(registerModel);
+
+        if (result)
+        {
+            // Проверяем, что пользователь действительно аутентифицирован
+            var isAuthenticated = await AuthService.IsAuthenticatedAsync();
+            if (isAuthenticated)
+            {
+                Navigation.NavigateTo("/dashboard/role-selection");
+            }
+            else
+            {
+                errorMessage = "Ошибка аутентификации после регистрации";
+                showError = true;
+            }
+        }
+        else
+        {
+            errorMessage = "Пользователь с таким email уже существует";
+            showError = true;
+        }
+
+        isLoading = false;
+        StateHasChanged();
+    }
+
+    private bool ValidateForm()
+    {
+        if (string.IsNullOrWhiteSpace(registerModel.Email))
+        {
+            errorMessage = "Введите email";
+            showError = true;
+            return false;
+        }
+
+        if (string.IsNullOrWhiteSpace(registerModel.Password))
+        {
+            errorMessage = "Введите пароль";
+            showError = true;
+            return false;
+        }
+
+        if (string.IsNullOrWhiteSpace(registerModel.FirstName))
+        {
+            errorMessage = "Введите имя";
+            showError = true;
+            return false;
+        }
+
+        if (string.IsNullOrWhiteSpace(registerModel.LastName))
+        {
+            errorMessage = "Введите фамилию";
+            showError = true;
+            return false;
+        }
+
+        if (registerModel.Password != registerModel.ConfirmPassword)
+        {
+            errorMessage = "Пароли не совпадают";
+            showError = true;
+            return false;
+        }
+
+        return true;
+    }
+
+    private void NavigateToLogin()
+    {
+        Navigation.NavigateTo("/login");
+    }
+
+    private void DismissError()
+    {
+        showError = false;
+    }
+}

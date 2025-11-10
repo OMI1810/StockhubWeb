@@ -1,0 +1,134 @@
+﻿@page "/dashboard/employee"
+@using StockhubWeb.Models
+@using StockhubWeb.Services
+@inject IAuthService AuthService
+@inject IOrganizationService OrganizationService
+@inject IWarehouseService WarehouseService
+@inject NavigationManager Navigation
+
+<div class="container mt-4">
+    @if (!hasOrganization)
+    {
+        <!-- Нет организации - только сообщение о приглашении -->
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card shadow">
+                    <div class="card-header bg-info text-white">
+                        <h4 class="mb-0">
+                            <i class="fas fa-envelope me-2"></i>
+                            Ожидание приглашения
+                        </h4>
+                    </div>
+                    <div class="card-body p-5 text-center">
+                        <div class="mb-4">
+                            <i class="fas fa-users fa-4x text-info mb-3"></i>
+                            <h4>Вас должны пригласить в организацию</h4>
+                            <p class="text-muted lead">
+                                Для доступа к системе инвентаризации организатор должен отправить вам приглашение.
+                                После получения приглашения вы сможете работать со складами и товарами.
+                            </p>
+                        </div>
+
+                        <div class="alert alert-warning">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>Обратитесь к организатору вашей компании</strong> для получения доступа к системе.
+                        </div>
+
+                        <div class="mt-4">
+                            <button class="btn btn-outline-secondary" @onclick="GoToRoleSelection">
+                                <i class="fas fa-arrow-left me-1"></i>
+                                Вернуться к выбору роли
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <!-- Есть организация - список складов -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>
+                <i class="fas fa-warehouse me-2 text-primary"></i>
+                Мои склады
+            </h2>
+            <div class="text-muted">
+                Организация: <strong>@currentOrganization?.Name</strong>
+            </div>
+        </div>
+
+        @if (warehouses.Count == 0)
+        {
+            <div class="alert alert-info">
+                <h5><i class="fas fa-info-circle me-2"></i>Склады не найдены</h5>
+                <p>В вашей организации пока нет складов. Обратитесь к организатору для создания складов.</p>
+            </div>
+        }
+        else
+        {
+            <div class="row">
+                @foreach (var warehouse in warehouses)
+                {
+                    <div class="col-md-6 col-lg-4 mb-4">
+                        <div class="card h-100 warehouse-card @(warehouse.IsActive ? "" : "border-warning")">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <h5 class="card-title">@warehouse.Name</h5>
+                                    <span class="badge @(warehouse.IsActive ? "bg-success" : "bg-warning")">
+                                        @(warehouse.IsActive ? "Активен" : "Неактивен")
+                                    </span>
+                                </div>
+                                <p class="card-text text-muted small">
+                                    Товаров: <strong>@warehouse.Products.Count</strong><br>
+                                    Создан: <strong>@warehouse.CreatedAt.ToString("dd.MM.yyyy")</strong>
+                                </p>
+                            </div>
+                            <div class="card-footer bg-transparent">
+                                <button class="btn btn-outline-primary btn-sm w-100"
+                                        @onclick="@(() => OpenWarehouse(warehouse.Id))">
+                                    <i class="fas fa-boxes me-1"></i>
+                                    Открыть склад
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+    }
+</div>
+
+@code {
+    private bool hasOrganization = false;
+    private Organization? currentOrganization;
+    private List<Warehouse> warehouses = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        var user = await AuthService.GetCurrentUserAsync();
+        if (user == null)
+        {
+            Navigation.NavigateTo("/auth/login");
+            return;
+        }
+
+        currentOrganization = await OrganizationService.GetUserOrganizationAsync(user.Id);
+        hasOrganization = currentOrganization != null;
+
+        if (hasOrganization && currentOrganization != null)
+        {
+            warehouses = await WarehouseService.GetOrganizationWarehousesAsync(currentOrganization.Id);
+        }
+    }
+
+    private void OpenWarehouse(string warehouseId)
+    {
+        Navigation.NavigateTo($"/dashboard/warehouses/{warehouseId}");
+    }
+
+    private void GoToRoleSelection()
+    {
+        Navigation.NavigateTo("/dashboard/role-selection");
+    }
+}

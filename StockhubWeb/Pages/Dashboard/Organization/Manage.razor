@@ -1,0 +1,348 @@
+﻿@page "/dashboard/organization/manage"
+@using StockhubWeb.Models
+@using StockhubWeb.Services
+@inject IAuthService AuthService
+@inject IOrganizationService OrganizationService
+@inject IWarehouseService WarehouseService
+@inject NavigationManager Navigation
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>
+            <i class="fas fa-building me-2 text-primary"></i>
+            Управление организацией
+        </h2>
+        <span class="badge bg-primary fs-6">Организатор</span>
+    </div>
+
+    @if (currentOrganization != null)
+    {
+        <div class="row">
+            <!-- Информация об организации -->
+            <div class="col-lg-8">
+                <!-- Быстрые действия -->
+                <div class="card mb-4">
+                    <div class="card-header bg-light">
+                        <h5 class="mb-0">Быстрые действия</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <button class="btn btn-primary w-100" @onclick="ShowCreateWarehouse">
+                                    <i class="fas fa-warehouse me-2"></i>
+                                    Создать новый склад
+                                </button>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                @if (warehouses.Count == 0)
+                                {
+                                    <button class="btn btn-success w-100" @onclick="CreateTestData">
+                                        <i class="fas fa-magic me-2"></i>
+                                        Создать тестовые данные
+                                    </button>
+                                }
+                                else
+                                {
+                                    <button class="btn btn-outline-secondary w-100" @onclick="GoToWarehouses">
+                                        <i class="fas fa-boxes me-2"></i>
+                                        Перейти к складам
+                                    </button>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Информация об организации -->
+                <div class="card mb-4">
+                    <div class="card-header bg-light">
+                        <h5 class="mb-0">Информация об организации</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <strong>Название:</strong> @currentOrganization.Name<br>
+                                <strong>ID организации:</strong> <code>@currentOrganization.Id</code><br>
+                                <strong>Дата создания:</strong> @currentOrganization.CreatedAt.ToString("dd.MM.yyyy")
+                            </div>
+                            <div class="col-md-6">
+                                <strong>Количество складов:</strong> @warehouses.Count<br>
+                                <strong>Статус:</strong> <span class="badge bg-success">Активна</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Склады -->
+                <div class="card">
+                    <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Склады организации</h5>
+                        <button class="btn btn-primary btn-sm" @onclick="ShowCreateWarehouse">
+                            <i class="fas fa-plus me-1"></i>
+                            Добавить склад
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        @if (warehouses.Count == 0)
+                        {
+                            <div class="text-center py-4">
+                                <i class="fas fa-warehouse fa-3x text-muted mb-3"></i>
+                                <p class="text-muted">У вас пока нет складов</p>
+                                <button class="btn btn-primary" @onclick="ShowCreateWarehouse">
+                                    Создать первый склад
+                                </button>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Название</th>
+                                            <th>Статус</th>
+                                            <th>Товаров</th>
+                                            <th>Дата создания</th>
+                                            <th>Действия</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var warehouse in warehouses)
+                                        {
+                                            <tr>
+                                                <td>
+                                                    <strong>@warehouse.Name</strong>
+                                                </td>
+                                                <td>
+                                                    <span class="badge @(warehouse.IsActive ? "bg-success" : "bg-warning")">
+                                                        @(warehouse.IsActive ? "Активен" : "Неактивен")
+                                                    </span>
+                                                </td>
+                                                <td>@warehouse.Products.Count</td>
+                                                <td>@warehouse.CreatedAt.ToString("dd.MM.yyyy")</td>
+                                                <td>
+                                                    <div class="btn-group btn-group-sm">
+                                                        <button class="btn btn-outline-primary"
+                                                                @onclick="@(() => OpenWarehouse(warehouse.Id))">
+                                                            <i class="fas fa-eye"></i>
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <!-- Боковая панель действий -->
+            <div class="col-lg-4">
+                <!-- Приглашение сотрудников -->
+                <div class="card mb-4">
+                    <div class="card-header bg-success text-white">
+                        <h6 class="mb-0">
+                            <i class="fas fa-user-plus me-1"></i>
+                            Пригласить сотрудника
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <p class="small text-muted mb-3">
+                            Отправьте эту информацию сотрудникам для присоединения к организации:
+                        </p>
+                        <div class="mb-3">
+                            <label class="form-label small">ID организации</label>
+                            <div class="input-group input-group-sm">
+                                <input class="form-control" value="@currentOrganization.Id" readonly />
+                                <button class="btn btn-outline-secondary" @onclick="CopyOrganizationId">
+                                    <i class="fas fa-copy"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small">Пароль организации</label>
+                            <div class="input-group input-group-sm">
+                                <input type="password" class="form-control" value="@currentOrganization.OrganizationPassword" readonly />
+                                <button class="btn btn-outline-secondary" @onclick="TogglePasswordVisibility">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Статистика -->
+                <div class="card">
+                    <div class="card-header bg-info text-white">
+                        <h6 class="mb-0">
+                            <i class="fas fa-chart-bar me-1"></i>
+                            Статистика
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="small">
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Склады:</span>
+                                <strong>@warehouses.Count</strong>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Активные:</span>
+                                <strong>@warehouses.Count(w => w.IsActive)</strong>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <span>Всего товаров:</span>
+                                <strong>@totalProducts</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-warning">
+            <h4>Организация не найдена</h4>
+            <p>Сначала создайте организацию для управления складами.</p>
+            <button class="btn btn-primary" @onclick="GoToCreateOrganization">
+                Создать организацию
+            </button>
+        </div>
+    }
+</div>
+
+@if (showCreateWarehouseModal)
+{
+    <!-- Модальное окно создания склада -->
+    <div class="modal show d-block" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-warehouse me-2"></i>
+                        Создание нового склада
+                    </h5>
+                    <button type="button" class="btn-close" @onclick="CloseCreateWarehouseModal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Название склада *</label>
+                        <input @bind="newWarehouseName" class="form-control" placeholder="Введите название склада" />
+                    </div>
+                    <div class="form-check form-switch mb-3">
+                        <input class="form-check-input" type="checkbox" @bind="newWarehouseActive" />
+                        <label class="form-check-label">Склад активен</label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @onclick="CloseCreateWarehouseModal">Отмена</button>
+                    <button type="button" class="btn btn-primary" @onclick="CreateWarehouse">Создать</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-backdrop show"></div>
+}
+
+@code {
+    private Organization? currentOrganization;
+    private List<Warehouse> warehouses = new();
+    private bool showCreateWarehouseModal = false;
+    private string newWarehouseName = string.Empty;
+    private bool newWarehouseActive = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var user = await AuthService.GetCurrentUserAsync();
+        if (user == null)
+        {
+            Navigation.NavigateTo("/login");
+            return;
+        }
+
+        currentOrganization = await OrganizationService.GetUserOrganizationAsync(user.Id);
+        if (currentOrganization != null)
+        {
+            warehouses = await WarehouseService.GetOrganizationWarehousesAsync(currentOrganization.Id);
+        }
+    }
+
+    private async Task CreateTestData()
+    {
+        if (currentOrganization != null)
+        {
+            var result = await WarehouseService.CreateTestWarehousesAsync(currentOrganization.Id);
+            if (result)
+            {
+                warehouses = await WarehouseService.GetOrganizationWarehousesAsync(currentOrganization.Id);
+                StateHasChanged();
+            }
+        }
+    }
+
+    private void GoToWarehouses()
+    {
+        Navigation.NavigateTo("/dashboard/employee");
+    }
+
+    private void GoToCreateOrganization()
+    {
+        Navigation.NavigateTo("/dashboard/organization/create");
+    }
+
+    private void ShowCreateWarehouse()
+    {
+        showCreateWarehouseModal = true;
+        newWarehouseName = string.Empty;
+        newWarehouseActive = true;
+    }
+
+    private void CloseCreateWarehouseModal()
+    {
+        showCreateWarehouseModal = false;
+    }
+
+    private async Task CreateWarehouse()
+    {
+        if (string.IsNullOrWhiteSpace(newWarehouseName) || currentOrganization == null)
+            return;
+
+        var warehouse = new Warehouse
+        {
+            Name = newWarehouseName,
+            OrganizationId = currentOrganization.Id,
+            IsActive = newWarehouseActive
+        };
+
+        var result = await WarehouseService.CreateWarehouseAsync(warehouse);
+        if (result)
+        {
+            warehouses = await WarehouseService.GetOrganizationWarehousesAsync(currentOrganization.Id);
+            showCreateWarehouseModal = false;
+            StateHasChanged();
+        }
+    }
+
+    private void OpenWarehouse(string warehouseId)
+    {
+        Navigation.NavigateTo($"/dashboard/warehouses/{warehouseId}");
+    }
+
+    private async Task CopyOrganizationId()
+    {
+        if (currentOrganization != null)
+        {
+            // В реальном приложении здесь будет копирование в буфер обмена
+            Console.WriteLine($"Скопирован ID организации: {currentOrganization.Id}");
+        }
+    }
+
+    private void TogglePasswordVisibility()
+    {
+        // Реализация переключения видимости пароля
+    }
+
+    private int totalProducts => warehouses.Sum(w => w.Products.Count);
+}
