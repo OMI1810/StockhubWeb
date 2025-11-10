@@ -1,4 +1,4 @@
-﻿namespace stockhub_web.Models
+﻿namespace stockhub-web.Models
 {
     public class Organization
     {

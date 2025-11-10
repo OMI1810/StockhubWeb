@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace stockhub_web.Models
+namespace stockhub-web.Models
 {
     public class LoginViewModel
     {

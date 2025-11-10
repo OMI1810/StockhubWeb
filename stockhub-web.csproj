@@ -4,7 +4,7 @@
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <RootNamespace>stockhub_web</RootNamespace>
+    <RootNamespace>stockhub-web</RootNamespace>
   </PropertyGroup>
 
 </Project>
