@@ -30,3 +30,35 @@ E:\VisualStudio\Project\StockhubWeb\StockhubWeb\obj\Debug\net8.0\refint\Stockhub
 E:\VisualStudio\Project\StockhubWeb\StockhubWeb\obj\Debug\net8.0\StockhubWeb.pdb
 E:\VisualStudio\Project\StockhubWeb\StockhubWeb\obj\Debug\net8.0\StockhubWeb.genruntimeconfig.cache
 E:\VisualStudio\Project\StockhubWeb\StockhubWeb\obj\Debug\net8.0\ref\StockhubWeb.dll
+D:\project VS\StockhubWeb\StockhubWeb\bin\Debug\net8.0\appsettings.Development.json
+D:\project VS\StockhubWeb\StockhubWeb\bin\Debug\net8.0\appsettings.json
+D:\project VS\StockhubWeb\StockhubWeb\bin\Debug\net8.0\StockhubWeb.staticwebassets.runtime.json
+D:\project VS\StockhubWeb\StockhubWeb\bin\Debug\net8.0\StockhubWeb.staticwebassets.endpoints.json
+D:\project VS\StockhubWeb\StockhubWeb\bin\Debug\net8.0\StockhubWeb.exe
+D:\project VS\StockhubWeb\StockhubWeb\bin\Debug\net8.0\StockhubWeb.deps.json
+D:\project VS\StockhubWeb\StockhubWeb\bin\Debug\net8.0\StockhubWeb.runtimeconfig.json
+D:\project VS\StockhubWeb\StockhubWeb\bin\Debug\net8.0\StockhubWeb.dll
+D:\project VS\StockhubWeb\StockhubWeb\bin\Debug\net8.0\StockhubWeb.pdb
+D:\project VS\StockhubWeb\StockhubWeb\obj\Debug\net8.0\rpswa.dswa.cache.json
+D:\project VS\StockhubWeb\StockhubWeb\obj\Debug\net8.0\StockhubWeb.GeneratedMSBuildEditorConfig.editorconfig
+D:\project VS\StockhubWeb\StockhubWeb\obj\Debug\net8.0\StockhubWeb.AssemblyInfoInputs.cache
+D:\project VS\StockhubWeb\StockhubWeb\obj\Debug\net8.0\StockhubWeb.AssemblyInfo.cs
+D:\project VS\StockhubWeb\StockhubWeb\obj\Debug\net8.0\StockhubWeb.csproj.CoreCompileInputs.cache
+D:\project VS\StockhubWeb\StockhubWeb\obj\Debug\net8.0\StockhubWeb.MvcApplicationPartsAssemblyInfo.cache
+D:\project VS\StockhubWeb\StockhubWeb\obj\Debug\net8.0\StockhubWeb.RazorAssemblyInfo.cache
+D:\project VS\StockhubWeb\StockhubWeb\obj\Debug\net8.0\StockhubWeb.RazorAssemblyInfo.cs
+D:\project VS\StockhubWeb\StockhubWeb\obj\Debug\net8.0\StockhubWeb.sourcelink.json
+D:\project VS\StockhubWeb\StockhubWeb\obj\Debug\net8.0\rjimswa.dswa.cache.json
+D:\project VS\StockhubWeb\StockhubWeb\obj\Debug\net8.0\rjsmrazor.dswa.cache.json
+D:\project VS\StockhubWeb\StockhubWeb\obj\Debug\net8.0\rjsmcshtml.dswa.cache.json
+D:\project VS\StockhubWeb\StockhubWeb\obj\Debug\net8.0\scopedcss\bundle\StockhubWeb.styles.css
+D:\project VS\StockhubWeb\StockhubWeb\obj\Debug\net8.0\staticwebassets.build.json
+D:\project VS\StockhubWeb\StockhubWeb\obj\Debug\net8.0\staticwebassets.build.json.cache
+D:\project VS\StockhubWeb\StockhubWeb\obj\Debug\net8.0\staticwebassets.development.json
+D:\project VS\StockhubWeb\StockhubWeb\obj\Debug\net8.0\staticwebassets.build.endpoints.json
+D:\project VS\StockhubWeb\StockhubWeb\obj\Debug\net8.0\staticwebassets.upToDateCheck.txt
+D:\project VS\StockhubWeb\StockhubWeb\obj\Debug\net8.0\StockhubWeb.dll
+D:\project VS\StockhubWeb\StockhubWeb\obj\Debug\net8.0\refint\StockhubWeb.dll
+D:\project VS\StockhubWeb\StockhubWeb\obj\Debug\net8.0\StockhubWeb.pdb
+D:\project VS\StockhubWeb\StockhubWeb\obj\Debug\net8.0\StockhubWeb.genruntimeconfig.cache
+D:\project VS\StockhubWeb\StockhubWeb\obj\Debug\net8.0\ref\StockhubWeb.dll

@@ -1,20 +1,20 @@
 {
   "format": 1,
   "restore": {
-    "E:\\VisualStudio\\Project\\StockhubWeb\\StockhubWeb\\StockhubWeb.csproj": {}
+    "D:\\project VS\\StockhubWeb\\StockhubWeb\\StockhubWeb.csproj": {}
   },
   "projects": {
-    "E:\\VisualStudio\\Project\\StockhubWeb\\StockhubWeb\\StockhubWeb.csproj": {
+    "D:\\project VS\\StockhubWeb\\StockhubWeb\\StockhubWeb.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "E:\\VisualStudio\\Project\\StockhubWeb\\StockhubWeb\\StockhubWeb.csproj",
+        "projectUniqueName": "D:\\project VS\\StockhubWeb\\StockhubWeb\\StockhubWeb.csproj",
         "projectName": "StockhubWeb",
-        "projectPath": "E:\\VisualStudio\\Project\\StockhubWeb\\StockhubWeb\\StockhubWeb.csproj",
+        "projectPath": "D:\\project VS\\StockhubWeb\\StockhubWeb\\StockhubWeb.csproj",
         "packagesPath": "C:\\Users\\nikit\\.nuget\\packages\\",
-        "outputPath": "E:\\VisualStudio\\Project\\StockhubWeb\\StockhubWeb\\obj\\",
+        "outputPath": "D:\\project VS\\StockhubWeb\\StockhubWeb\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
-          "E:\\VisualStudio\\2022\\Shared\\NuGetPackages"
+          "D:\\vs\\shared\\NuGetPackages"
         ],
         "configFilePaths": [
           "C:\\Users\\nikit\\AppData\\Roaming\\NuGet\\NuGet.Config",
@@ -26,7 +26,6 @@
         ],
         "sources": {
           "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
-          "C:\\Program Files\\dotnet\\library-packs": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
