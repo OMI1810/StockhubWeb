@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "QRYW7MRx56E=",
+  "dgSpecHash": "FZDWi2FW0fc=",
   "success": true,
-  "projectFilePath": "D:\\project VS\\StockhubWeb\\StockhubWeb\\StockhubWeb.csproj",
+  "projectFilePath": "E:\\VisualStudio\\Project\\StockhubWeb\\StockhubWeb\\StockhubWeb.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\nikit\\.nuget\\packages\\microsoft.aspnetcore.authorization\\8.0.0\\microsoft.aspnetcore.authorization.8.0.0.nupkg.sha512",
     "C:\\Users\\nikit\\.nuget\\packages\\microsoft.aspnetcore.components\\8.0.0\\microsoft.aspnetcore.components.8.0.0.nupkg.sha512",

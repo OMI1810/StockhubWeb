@@ -1,4 +1,4 @@
-﻿namespace StockhubWeb.Services
+﻿namespace StockhubWeb.Services.HttpService
 {
     public interface IHttpService
     {

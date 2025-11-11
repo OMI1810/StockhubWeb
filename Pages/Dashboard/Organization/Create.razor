@@ -1,6 +1,9 @@
 ﻿@page "/dashboard/organization/create"
 @using StockhubWeb.Models
 @using StockhubWeb.Services
+@using StockhubWeb.Services.AuthService
+@using StockhubWeb.Services.InvoiceService
+@using StockhubWeb.Services.OrganizationService
 @inject IAuthService AuthService
 @inject IOrganizationService OrganizationService
 @inject NavigationManager Navigation
@@ -41,43 +44,24 @@
                         }
                         Создать организацию
                     </button>
-
-                    <div class="text-center mt-3">
-                        <small class="text-muted">
-                            Уже есть организация?
-                            <button class="btn btn-link p-0" @onclick="JoinOrganization">
-                                Присоединиться
-                            </button>
-                        </small>
-                    </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
 
-@if (showError)
-{
-    <div class="alert alert-danger alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3" role="alert">
-        <strong>Ошибка!</strong> @errorMessage
-        <button type="button" class="btn-close" @onclick="DismissError"></button>
-    </div>
-}
-
 @code {
     private string organizationName = string.Empty;
     private string organizationPassword = string.Empty;
     private string confirmPassword = string.Empty;
     private bool isLoading = false;
-    private bool showError = false;
-    private string errorMessage = string.Empty;
 
     protected override async Task OnInitializedAsync()
     {
         var user = await AuthService.GetCurrentUserAsync();
-        if (user == null)
+        if (user == null || user.Role != UserRole.Organizer)
         {
-            Navigation.NavigateTo("/login");
+            Navigation.NavigateTo("/auth/organizer/login");
         }
     }
 
@@ -101,11 +85,6 @@
             {
                 Navigation.NavigateTo("/dashboard/organization/manage");
             }
-            else
-            {
-                errorMessage = "Ошибка при создании организации";
-                showError = true;
-            }
         }
 
         isLoading = false;
@@ -114,37 +93,8 @@
 
     private bool ValidateForm()
     {
-        if (string.IsNullOrWhiteSpace(organizationName))
-        {
-            errorMessage = "Введите название организации";
-            showError = true;
-            return false;
-        }
-
-        if (string.IsNullOrWhiteSpace(organizationPassword))
-        {
-            errorMessage = "Введите пароль организации";
-            showError = true;
-            return false;
-        }
-
-        if (organizationPassword != confirmPassword)
-        {
-            errorMessage = "Пароли не совпадают";
-            showError = true;
-            return false;
-        }
-
-        return true;
-    }
-
-    private void JoinOrganization()
-    {
-        Navigation.NavigateTo("/dashboard/employee");
-    }
-
-    private void DismissError()
-    {
-        showError = false;
+        return !string.IsNullOrWhiteSpace(organizationName) &&
+               !string.IsNullOrWhiteSpace(organizationPassword) &&
+               organizationPassword == confirmPassword;
     }
 }

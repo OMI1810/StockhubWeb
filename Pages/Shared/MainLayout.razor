@@ -16,7 +16,10 @@
                 <div class="d-flex justify-content-between w-100">
                     <small>StockhubWeb - Система инвентаризации</small>
                     <div>
-                        <span class="me-3">Привет, @user?.FirstName!</span>
+                        @if (user != null)
+                        {
+                            <span class="me-3">@user.FirstName</span>
+                        }
                         <button class="btn btn-sm btn-outline-light" @onclick="Logout">
                             <i class="fas fa-sign-out-alt me-1"></i>
                             Выйти
@@ -48,6 +51,6 @@
     private async Task Logout()
     {
         await AuthService.LogoutAsync();
-        Navigation.NavigateTo("/auth/login", true);
+        Navigation.NavigateTo("/", forceLoad: true);
     }
 }

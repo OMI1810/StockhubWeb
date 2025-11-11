@@ -1,6 +1,9 @@
-﻿using StockhubWeb.Models;
+﻿// OrganizationService.cs
 
-namespace StockhubWeb.Services
+// OrganizationService.cs
+using StockhubWeb.Models;
+
+namespace StockhubWeb.Services.OrganizationService
 {
     public class OrganizationService : IOrganizationService
     {
@@ -38,6 +41,26 @@ namespace StockhubWeb.Services
             return true;
         }
 
+        public async Task<bool> AddEmployeeToOrganizationAsync(string organizationId, string employeeId)
+        {
+            await Task.Delay(500);
+
+            var organization = _organizations.FirstOrDefault(o => o.Id == organizationId);
+            if (organization != null)
+            {
+                _members.Add(new OrganizationMember
+                {
+                    UserId = employeeId,
+                    OrganizationId = organizationId,
+                    Role = "Employee"
+                });
+
+                organization.EmployeeIds.Add(employeeId);
+                return true;
+            }
+            return false;
+        }
+
         public async Task<bool> JoinOrganizationAsync(string organizationId, string password, string userId)
         {
             await Task.Delay(500);
@@ -51,6 +74,8 @@ namespace StockhubWeb.Services
                     OrganizationId = organizationId,
                     Role = "Employee"
                 });
+
+                organization.EmployeeIds.Add(userId);
                 return true;
             }
             return false;
@@ -61,6 +86,12 @@ namespace StockhubWeb.Services
             await Task.Delay(100);
             var userOrgIds = _members.Where(m => m.UserId == userId).Select(m => m.OrganizationId);
             return _organizations.Where(o => userOrgIds.Contains(o.Id)).ToList();
+        }
+
+        public async Task<Organization?> GetOrganizationByIdAsync(string organizationId)
+        {
+            await Task.Delay(100);
+            return _organizations.FirstOrDefault(o => o.Id == organizationId);
         }
     }
 }

@@ -1,6 +1,10 @@
-﻿@page "/dashboard/organization/manage"
+﻿@* Manage.razor *@
+@page "/dashboard/organization/manage"
 @using StockhubWeb.Models
 @using StockhubWeb.Services
+@using StockhubWeb.Services.AuthService
+@using StockhubWeb.Services.InvoiceService
+@using StockhubWeb.Services.OrganizationService
 @inject IAuthService AuthService
 @inject IOrganizationService OrganizationService
 @inject IWarehouseService WarehouseService
@@ -17,187 +21,83 @@
 
     @if (currentOrganization != null)
     {
-        <div class="row">
-            <!-- Информация об организации -->
-            <div class="col-lg-8">
-                <!-- Быстрые действия -->
-                <div class="card mb-4">
-                    <div class="card-header bg-light">
-                        <h5 class="mb-0">Быстрые действия</h5>
-                    </div>
-                    <div class="card-body">
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <button class="btn btn-primary w-100" @onclick="ShowCreateWarehouse">
-                                    <i class="fas fa-warehouse me-2"></i>
-                                    Создать новый склад
-                                </button>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                @if (warehouses.Count == 0)
-                                {
-                                    <button class="btn btn-success w-100" @onclick="CreateTestData">
-                                        <i class="fas fa-magic me-2"></i>
-                                        Создать тестовые данные
-                                    </button>
-                                }
-                                else
-                                {
-                                    <button class="btn btn-outline-secondary w-100" @onclick="GoToWarehouses">
-                                        <i class="fas fa-boxes me-2"></i>
-                                        Перейти к складам
-                                    </button>
-                                }
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Информация об организации -->
-                <div class="card mb-4">
-                    <div class="card-header bg-light">
-                        <h5 class="mb-0">Информация об организации</h5>
-                    </div>
-                    <div class="card-body">
-                        <div class="row">
-                            <div class="col-md-6">
-                                <strong>Название:</strong> @currentOrganization.Name<br>
-                                <strong>ID организации:</strong> <code>@currentOrganization.Id</code><br>
-                                <strong>Дата создания:</strong> @currentOrganization.CreatedAt.ToString("dd.MM.yyyy")
-                            </div>
-                            <div class="col-md-6">
-                                <strong>Количество складов:</strong> @warehouses.Count<br>
-                                <strong>Статус:</strong> <span class="badge bg-success">Активна</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Склады -->
-                <div class="card">
-                    <div class="card-header bg-light d-flex justify-content-between align-items-center">
-                        <h5 class="mb-0">Склады организации</h5>
-                        <button class="btn btn-primary btn-sm" @onclick="ShowCreateWarehouse">
-                            <i class="fas fa-plus me-1"></i>
+        <!-- Панель быстрых действий -->
+        <div class="card mb-4">
+            <div class="card-header bg-light">
+                <h5 class="mb-0">Панель управления</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <button class="btn btn-primary w-100" @onclick="ShowCreateWarehouseModal">
+                            <i class="fas fa-warehouse me-2"></i>
                             Добавить склад
                         </button>
                     </div>
-                    <div class="card-body">
-                        @if (warehouses.Count == 0)
-                        {
-                            <div class="text-center py-4">
-                                <i class="fas fa-warehouse fa-3x text-muted mb-3"></i>
-                                <p class="text-muted">У вас пока нет складов</p>
-                                <button class="btn btn-primary" @onclick="ShowCreateWarehouse">
-                                    Создать первый склад
-                                </button>
-                            </div>
-                        }
-                        else
-                        {
-                            <div class="table-responsive">
-                                <table class="table table-hover">
-                                    <thead>
-                                        <tr>
-                                            <th>Название</th>
-                                            <th>Статус</th>
-                                            <th>Товаров</th>
-                                            <th>Дата создания</th>
-                                            <th>Действия</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @foreach (var warehouse in warehouses)
-                                        {
-                                            <tr>
-                                                <td>
-                                                    <strong>@warehouse.Name</strong>
-                                                </td>
-                                                <td>
-                                                    <span class="badge @(warehouse.IsActive ? "bg-success" : "bg-warning")">
-                                                        @(warehouse.IsActive ? "Активен" : "Неактивен")
-                                                    </span>
-                                                </td>
-                                                <td>@warehouse.Products.Count</td>
-                                                <td>@warehouse.CreatedAt.ToString("dd.MM.yyyy")</td>
-                                                <td>
-                                                    <div class="btn-group btn-group-sm">
-                                                        <button class="btn btn-outline-primary"
-                                                                @onclick="@(() => OpenWarehouse(warehouse.Id))">
-                                                            <i class="fas fa-eye"></i>
-                                                        </button>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        }
-                                    </tbody>
-                                </table>
-                            </div>
-                        }
+                    <div class="col-md-4 mb-3">
+                        <button class="btn btn-success w-100" @onclick="ShowInviteEmployeeModal">
+                            <i class="fas fa-user-plus me-2"></i>
+                            Добавить сотрудника
+                        </button>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <button class="btn btn-info w-100" @onclick="ShowOrganizationInfoModal">
+                            <i class="fas fa-info-circle me-2"></i>
+                            Информация об организации
+                        </button>
                     </div>
                 </div>
             </div>
+        </div>
 
-            <!-- Боковая панель действий -->
-            <div class="col-lg-4">
-                <!-- Приглашение сотрудников -->
-                <div class="card mb-4">
-                    <div class="card-header bg-success text-white">
-                        <h6 class="mb-0">
-                            <i class="fas fa-user-plus me-1"></i>
-                            Пригласить сотрудника
-                        </h6>
+        <!-- Список складов -->
+        <div class="card">
+            <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Склады организации</h5>
+                <span class="badge bg-secondary">@warehouses.Count складов</span>
+            </div>
+            <div class="card-body">
+                @if (warehouses.Count == 0)
+                {
+                    <div class="text-center py-5">
+                        <i class="fas fa-warehouse fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">У вас пока нет складов</p>
+                        <button class="btn btn-primary" @onclick="ShowCreateWarehouseModal">
+                            Создать первый склад
+                        </button>
                     </div>
-                    <div class="card-body">
-                        <p class="small text-muted mb-3">
-                            Отправьте эту информацию сотрудникам для присоединения к организации:
-                        </p>
-                        <div class="mb-3">
-                            <label class="form-label small">ID организации</label>
-                            <div class="input-group input-group-sm">
-                                <input class="form-control" value="@currentOrganization.Id" readonly />
-                                <button class="btn btn-outline-secondary" @onclick="CopyOrganizationId">
-                                    <i class="fas fa-copy"></i>
-                                </button>
+                }
+                else
+                {
+                    <div class="row">
+                        @foreach (var warehouse in warehouses)
+                        {
+                            <div class="col-md-6 col-lg-4 mb-4">
+                                <div class="card h-100 warehouse-card @(warehouse.IsActive ? "" : "border-warning")">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between align-items-start mb-2">
+                                            <h5 class="card-title">@warehouse.Name</h5>
+                                            <span class="badge @(warehouse.IsActive ? "bg-success" : "bg-warning")">
+                                                @(warehouse.IsActive ? "Активен" : "Неактивен")
+                                            </span>
+                                        </div>
+                                        <p class="card-text text-muted small">
+                                            Товаров: <strong>@warehouse.Products.Count</strong><br>
+                                            Создан: <strong>@warehouse.CreatedAt.ToString("dd.MM.yyyy")</strong>
+                                        </p>
+                                    </div>
+                                    <div class="card-footer bg-transparent">
+                                        <button class="btn btn-outline-primary btn-sm w-100"
+                                                @onclick="@(() => OpenWarehouse(warehouse.Id))">
+                                            <i class="fas fa-eye me-1"></i>
+                                            Открыть склад
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label small">Пароль организации</label>
-                            <div class="input-group input-group-sm">
-                                <input type="password" class="form-control" value="@currentOrganization.OrganizationPassword" readonly />
-                                <button class="btn btn-outline-secondary" @onclick="TogglePasswordVisibility">
-                                    <i class="fas fa-eye"></i>
-                                </button>
-                            </div>
-                        </div>
+                        }
                     </div>
-                </div>
-
-                <!-- Статистика -->
-                <div class="card">
-                    <div class="card-header bg-info text-white">
-                        <h6 class="mb-0">
-                            <i class="fas fa-chart-bar me-1"></i>
-                            Статистика
-                        </h6>
-                    </div>
-                    <div class="card-body">
-                        <div class="small">
-                            <div class="d-flex justify-content-between mb-2">
-                                <span>Склады:</span>
-                                <strong>@warehouses.Count</strong>
-                            </div>
-                            <div class="d-flex justify-content-between mb-2">
-                                <span>Активные:</span>
-                                <strong>@warehouses.Count(w => w.IsActive)</strong>
-                            </div>
-                            <div class="d-flex justify-content-between">
-                                <span>Всего товаров:</span>
-                                <strong>@totalProducts</strong>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                }
             </div>
         </div>
     }
@@ -206,16 +106,16 @@
         <div class="alert alert-warning">
             <h4>Организация не найдена</h4>
             <p>Сначала создайте организацию для управления складами.</p>
-            <button class="btn btn-primary" @onclick="GoToCreateOrganization">
+            <button class="btn btn-primary" @onclick="CreateOrganization">
                 Создать организацию
             </button>
         </div>
     }
 </div>
 
+<!-- Модальное окно создания склада -->
 @if (showCreateWarehouseModal)
 {
-    <!-- Модальное окно создания склада -->
     <div class="modal show d-block" tabindex="-1">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -246,53 +146,178 @@
     <div class="modal-backdrop show"></div>
 }
 
+<!-- Модальное окно приглашения сотрудника -->
+@if (showInviteEmployeeModal)
+{
+    <div class="modal show d-block" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-user-plus me-2"></i>
+                        Пригласить сотрудника
+                    </h5>
+                    <button type="button" class="btn-close" @onclick="CloseInviteEmployeeModal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Email *</label>
+                        <input type="email" @bind="newEmployeeEmail" class="form-control" placeholder="Введите email сотрудника" />
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label class="form-label">Фамилия *</label>
+                                <input @bind="newEmployeeLastName" class="form-control" placeholder="Фамилия" />
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label class="form-label">Имя *</label>
+                                <input @bind="newEmployeeFirstName" class="form-control" placeholder="Имя" />
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label class="form-label">Отчество</label>
+                                <input @bind="newEmployeeMiddleName" class="form-control" placeholder="Отчество" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @onclick="CloseInviteEmployeeModal">Отмена</button>
+                    <button type="button" class="btn btn-primary" @onclick="InviteEmployee">Пригласить</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-backdrop show"></div>
+}
+
+<!-- Модальное окно информации об организации -->
+@if (showOrganizationInfoModal)
+{
+    <div class="modal show d-block" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Информация об организации
+                    </h5>
+                    <button type="button" class="btn-close" @onclick="CloseOrganizationInfoModal"></button>
+                </div>
+                <div class="modal-body">
+                    @if (currentOrganization != null)
+                    {
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <h6>Основная информация</h6>
+                                <p><strong>Название:</strong> @currentOrganization.Name</p>
+                                <p><strong>ID организации:</strong> <code>@currentOrganization.Id</code></p>
+                                <p><strong>Дата создания:</strong> @currentOrganization.CreatedAt.ToString("dd.MM.yyyy")</p>
+                            </div>
+                            <div class="col-md-6">
+                                <h6>Статистика</h6>
+                                <p><strong>Количество складов:</strong> @warehouses.Count</p>
+                                <p><strong>Количество сотрудников:</strong> @employees.Count</p>
+                                <p><strong>Всего товаров:</strong> @totalProducts</p>
+                            </div>
+                        </div>
+
+                        <h6>Сотрудники организации</h6>
+                        @if (employees.Count == 0)
+                        {
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle me-2"></i>
+                                В организации пока нет сотрудников
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="table-responsive">
+                                <table class="table table-sm">
+                                    <thead>
+                                        <tr>
+                                            <th>ФИО</th>
+                                            <th>Email</th>
+                                            <th>Дата регистрации</th>
+                                            <th>Действия</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var employee in employees)
+                                        {
+                                            <tr>
+                                                <td>@employee.LastName @employee.FirstName @employee.MiddleName</td>
+                                                <td>@employee.Email</td>
+                                                <td>@employee.CreatedAt.ToString("dd.MM.yyyy")</td>
+                                                <td>
+                                                    <button class="btn btn-sm btn-outline-danger"
+                                                            @onclick="@(() => RemoveEmployee(employee.Id))">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        }
+                    }
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @onclick="CloseOrganizationInfoModal">Закрыть</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-backdrop show"></div>
+}
+
 @code {
     private Organization? currentOrganization;
     private List<Warehouse> warehouses = new();
+    private List<User> employees = new();
+
+    // Модальные окна
     private bool showCreateWarehouseModal = false;
+    private bool showInviteEmployeeModal = false;
+    private bool showOrganizationInfoModal = false;
+
+    // Данные для форм
     private string newWarehouseName = string.Empty;
     private bool newWarehouseActive = true;
+    private string newEmployeeEmail = string.Empty;
+    private string newEmployeeFirstName = string.Empty;
+    private string newEmployeeLastName = string.Empty;
+    private string? newEmployeeMiddleName = string.Empty;
 
     protected override async Task OnInitializedAsync()
     {
         var user = await AuthService.GetCurrentUserAsync();
-        if (user == null)
+        if (user == null || user.Role != UserRole.Organizer)
         {
-            Navigation.NavigateTo("/login");
+            Navigation.NavigateTo("/auth/organizer/login");
             return;
         }
 
-        currentOrganization = await OrganizationService.GetUserOrganizationAsync(user.Id);
+        await LoadOrganizationData(user.Id);
+    }
+
+    private async Task LoadOrganizationData(string userId)
+    {
+        currentOrganization = await OrganizationService.GetUserOrganizationAsync(userId);
         if (currentOrganization != null)
         {
             warehouses = await WarehouseService.GetOrganizationWarehousesAsync(currentOrganization.Id);
+            employees = await AuthService.GetOrganizationEmployeesAsync(currentOrganization.Id);
         }
     }
 
-    private async Task CreateTestData()
-    {
-        if (currentOrganization != null)
-        {
-            var result = await WarehouseService.CreateTestWarehousesAsync(currentOrganization.Id);
-            if (result)
-            {
-                warehouses = await WarehouseService.GetOrganizationWarehousesAsync(currentOrganization.Id);
-                StateHasChanged();
-            }
-        }
-    }
-
-    private void GoToWarehouses()
-    {
-        Navigation.NavigateTo("/dashboard/employee");
-    }
-
-    private void GoToCreateOrganization()
-    {
-        Navigation.NavigateTo("/dashboard/organization/create");
-    }
-
-    private void ShowCreateWarehouse()
+    // Методы для модальных окон создания склада
+    private void ShowCreateWarehouseModal()
     {
         showCreateWarehouseModal = true;
         newWarehouseName = string.Empty;
@@ -325,23 +350,85 @@
         }
     }
 
+    // Методы для модальных окон приглашения сотрудника
+    private void ShowInviteEmployeeModal()
+    {
+        showInviteEmployeeModal = true;
+        newEmployeeEmail = string.Empty;
+        newEmployeeFirstName = string.Empty;
+        newEmployeeLastName = string.Empty;
+        newEmployeeMiddleName = string.Empty;
+    }
+
+    private void CloseInviteEmployeeModal()
+    {
+        showInviteEmployeeModal = false;
+    }
+
+    private async Task InviteEmployee()
+    {
+        if (string.IsNullOrWhiteSpace(newEmployeeEmail) ||
+            string.IsNullOrWhiteSpace(newEmployeeFirstName) ||
+            string.IsNullOrWhiteSpace(newEmployeeLastName) ||
+            currentOrganization == null)
+            return;
+
+        var inviteModel = new InviteEmployeeModel
+        {
+            Email = newEmployeeEmail,
+            FirstName = newEmployeeFirstName,
+            LastName = newEmployeeLastName,
+            MiddleName = newEmployeeMiddleName,
+            OrganizationId = currentOrganization.Id
+        };
+
+        var result = await AuthService.InviteEmployeeAsync(inviteModel);
+        if (result)
+        {
+            employees = await AuthService.GetOrganizationEmployeesAsync(currentOrganization.Id);
+            showInviteEmployeeModal = false;
+            StateHasChanged();
+        }
+    }
+
+    // Методы для модального окна информации об организации
+    private void ShowOrganizationInfoModal()
+    {
+        showOrganizationInfoModal = true;
+    }
+
+    private void CloseOrganizationInfoModal()
+    {
+        showOrganizationInfoModal = false;
+    }
+
+    // Метод удаления сотрудника
+    private async Task RemoveEmployee(string employeeId)
+    {
+        // Здесь должна быть реализация удаления сотрудника
+        // Пока просто обновляем список
+        employees = employees.Where(e => e.Id != employeeId).ToList();
+        StateHasChanged();
+    }
+
+    // Навигация
     private void OpenWarehouse(string warehouseId)
     {
         Navigation.NavigateTo($"/dashboard/warehouses/{warehouseId}");
     }
 
-    private async Task CopyOrganizationId()
+    private async Task CreateOrganization()
     {
-        if (currentOrganization != null)
+        var user = await AuthService.GetCurrentUserAsync();
+        if (user != null)
         {
-            // В реальном приложении здесь будет копирование в буфер обмена
-            Console.WriteLine($"Скопирован ID организации: {currentOrganization.Id}");
+            var orgName = $"{user.FirstName} {user.LastName}";
+            var result = await OrganizationService.CreateOrganizationAsync(orgName, "default123", user.Id);
+            if (result)
+            {
+                await LoadOrganizationData(user.Id);
+            }
         }
-    }
-
-    private void TogglePasswordVisibility()
-    {
-        // Реализация переключения видимости пароля
     }
 
     private int totalProducts => warehouses.Sum(w => w.Products.Count);

@@ -1,6 +1,6 @@
 ﻿using StockhubWeb.Models;
 
-namespace StockhubWeb.Services
+namespace StockhubWeb.Services.WarehouseService
 {
     public class WarehouseService : IWarehouseService
     {

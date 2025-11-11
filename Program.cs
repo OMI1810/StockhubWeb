@@ -1,5 +1,7 @@
-// Program.cs
-using StockhubWeb.Services;
+using StockhubWeb.Services.AuthService;
+using StockhubWeb.Services.OrganizationService;
+using StockhubWeb.Services.WarehouseService;
+using StockhubWeb.Services.InvoiceService;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -7,31 +9,11 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 
-// Register HTTP services
-builder.Services.AddScoped<IHttpService, HttpService>();
-
-// Register application services
+// Register services
 builder.Services.AddScoped<IOrganizationService, OrganizationService>();
 builder.Services.AddScoped<IWarehouseService, WarehouseService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
-
-// Configure HTTP client with settings from appsettings.json
-builder.Services.AddScoped(provider =>
-{
-    var httpService = provider.GetRequiredService<IHttpService>();
-    var configuration = provider.GetRequiredService<IConfiguration>();
-
-    var baseUrl = configuration["ApiSettings:BaseUrl"];
-    var timeoutSeconds = configuration.GetValue<int>("ApiSettings:TimeoutSeconds", 30);
-
-    if (!string.IsNullOrEmpty(baseUrl))
-    {
-        httpService.SetBaseUrl(baseUrl);
-    }
-    httpService.SetTimeout(TimeSpan.FromSeconds(timeoutSeconds));
-
-    return httpService;
-});
+builder.Services.AddScoped<IInvoiceService, InvoiceService>();
 
 var app = builder.Build();
 

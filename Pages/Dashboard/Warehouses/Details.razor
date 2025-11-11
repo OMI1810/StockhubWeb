@@ -1,8 +1,11 @@
 ﻿@page "/dashboard/warehouses/{warehouseId}"
 @using StockhubWeb.Models
-@using StockhubWeb.Services
+@using StockhubWeb.Services.AuthService
+@using StockhubWeb.Services.WarehouseService
+@using StockhubWeb.Services.InvoiceService
 @inject IAuthService AuthService
 @inject IWarehouseService WarehouseService
+@inject IInvoiceService InvoiceService
 @inject NavigationManager Navigation
 
 <div class="container mt-4">
@@ -23,9 +26,13 @@
                 </div>
             </div>
             <div>
-                <button class="btn btn-outline-secondary me-2" @onclick="GoBack">
+                <button class="btn btn-info me-2" @onclick="ShowInvoice">
+                    <i class="fas fa-file-invoice me-1"></i>
+                    Накладная
+                </button>
+                <button class="btn btn-outline-secondary" @onclick="GoBack">
                     <i class="fas fa-arrow-left me-1"></i>
-                    Назад к складам
+                    Назад
                 </button>
             </div>
         </div>
@@ -34,14 +41,14 @@
         <ul class="nav nav-tabs mb-4">
             <li class="nav-item">
                 <a class="nav-link @(activeTab == "products" ? "active" : "")"
-                   @onclick="@(() => SwitchTab("products"))">
+                   @onclick='() => SwitchTab("products")'>
                     <i class="fas fa-boxes me-1"></i>
                     Товары (@products.Count)
                 </a>
             </li>
             <li class="nav-item">
                 <a class="nav-link @(activeTab == "transfers" ? "active" : "")"
-                   @onclick="@(() => SwitchTab("transfers"))">
+                   @onclick='() => SwitchTab("transfers")'>
                     <i class="fas fa-exchange-alt me-1"></i>
                     История перемещений (@transfers.Count)
                 </a>
@@ -52,12 +59,11 @@
         {
             <!-- Вкладка товаров -->
             <div class="card">
-                <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                <div class="card-header bg-light">
                     <h5 class="mb-0">Товары на складе</h5>
-                    <small class="text-muted">Всего: @filteredProducts.Count</small>
                 </div>
                 <div class="card-body p-0">
-                    @if (filteredProducts.Count == 0)
+                    @if (products.Count == 0)
                     {
                         <div class="text-center py-5">
                             <i class="fas fa-boxes fa-3x text-muted mb-3"></i>
@@ -75,11 +81,10 @@
                                         <th>Количество</th>
                                         <th>Цена</th>
                                         <th>Общая стоимость</th>
-                                        <th>Дата обновления</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach (var product in filteredProducts)
+                                    @foreach (var product in products)
                                     {
                                         <tr>
                                             <td>
@@ -106,11 +111,6 @@
                                                     @((product.Quantity * product.Price).ToString("C"))
                                                 </strong>
                                             </td>
-                                            <td>
-                                                <small class="text-muted">
-                                                    @product.UpdatedAt?.ToString("dd.MM.yyyy HH:mm")
-                                                </small>
-                                            </td>
                                         </tr>
                                     }
                                 </tbody>
@@ -120,13 +120,12 @@
                 </div>
             </div>
         }
-    @if (activeTab == "transfers")
-    {
+        else if (activeTab == "transfers")
+        {
             <!-- Вкладка истории перемещений -->
             <div class="card">
-                <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                <div class="card-header bg-light">
                     <h5 class="mb-0">История перемещений товаров</h5>
-                    <small class="text-muted">Всего операций: @transfers.Count</small>
                 </div>
                 <div class="card-body p-0">
                     @if (transfers.Count == 0)
@@ -147,7 +146,6 @@
                                         <th>Откуда</th>
                                         <th>Куда</th>
                                         <th>Количество</th>
-                                        <th>Примечание</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -156,79 +154,81 @@
                                         <tr>
                                             <td>
                                                 <small class="text-muted">
-                                                    @transfer.TransferDate.ToString("dd.MM.yyyy HH:mm")
+                                                    @transfer.TransferDate.ToString("dd.MM.yyyy")
                                                 </small>
                                             </td>
                                             <td>
                                                 <strong>@transfer.ProductName</strong>
                                             </td>
                                             <td>
-                                                @if (transfer.FromWarehouseId == warehouse?.Id)
-                                                {
-                                                    <span class="badge bg-danger">
-                                                        <i class="fas fa-arrow-up me-1"></i>
-                                                        Отправлено
-                                                    </span>
-                                                }
-                                                else
-                                                {
-                                                    <span class="text-muted">@transfer.FromWarehouseName</span>
-                                                }
+                                                <span class="text-muted">@transfer.FromWarehouseName</span>
                                             </td>
                                             <td>
-                                                @if (transfer.ToWarehouseId == warehouse?.Id)
-                                                {
-                                                    <span class="badge bg-success">
-                                                        <i class="fas fa-arrow-down me-1"></i>
-                                                        Получено
-                                                    </span>
-                                                }
-                                                else
-                                                {
-                                                    <span class="text-muted">@transfer.ToWarehouseName</span>
-                                                }
+                                                <span class="text-muted">@transfer.ToWarehouseName</span>
                                             </td>
                                             <td>
                                                 <span class="fw-bold">@transfer.Quantity</span>
-                                            </td>
-                                            <td>
-                                                <small class="text-muted">@transfer.Notes</small>
                                             </td>
                                         </tr>
                                     }
                                 </tbody>
                             </table>
                         </div>
-
-                        <!-- Статистика перемещений -->
-                        <div class="card-footer bg-light">
-                            <div class="row text-center">
-                                <div class="col-md-3">
-                                    <small class="text-muted">Получено товаров</small>
-                                    <div class="fw-bold text-success">@receivedTransfers</div>
-                                </div>
-                                <div class="col-md-3">
-                                    <small class="text-muted">Отправлено товаров</small>
-                                    <div class="fw-bold text-danger">@sentTransfers</div>
-                                </div>
-                                <div class="col-md-3">
-                                    <small class="text-muted">Всего операций</small>
-                                    <div class="fw-bold text-primary">@transfers.Count</div>
-                                </div>
-                                <div class="col-md-3">
-                                    <small class="text-muted">Общее количество</small>
-                                    <div class="fw-bold text-warning">@totalTransferredQuantity</div>
-                                </div>
-                            </div>
-                        </div>
                     }
                 </div>
             </div>
         }
     }
+    else
+    {
+        <div class="alert alert-warning">
+            <h4>Склад не найден</h4>
+            <p>Запрашиваемый склад не существует или у вас нет к нему доступа.</p>
+            <button class="btn btn-primary" @onclick="GoBack">
+                Вернуться назад
+            </button>
+        </div>
+    }
 </div>
 
-    
+<!-- Модальное окно накладной -->
+@if (showInvoiceModal)
+{
+    <div class="modal show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-file-invoice me-2"></i>
+                        Накладная склада
+                    </h5>
+                    <button type="button" class="btn-close" @onclick="CloseInvoiceModal"></button>
+                </div>
+                <div class="modal-body">
+                    @if (isLoadingInvoice)
+                    {
+                        <div class="text-center py-4">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Загрузка...</span>
+                            </div>
+                            <p class="mt-2">Генерация накладной...</p>
+                        </div>
+                    }
+                    else if (!string.IsNullOrEmpty(invoiceContent))
+                    {
+                        <div class="border p-3 bg-light">
+                            <pre class="mb-0" style="font-family: 'Courier New', monospace; font-size: 14px; white-space: pre-wrap;">@invoiceContent</pre>
+                        </div>
+                    }
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @onclick="CloseInvoiceModal">Закрыть</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-backdrop show"></div>
+}
 
 @code {
     [Parameter]
@@ -236,16 +236,13 @@
 
     private Warehouse? warehouse;
     private List<Product> products = new();
-    private List<Product> filteredProducts = new();
     private List<ProductTransfer> transfers = new();
     private string activeTab = "products";
-    private string searchTerm = string.Empty;
-    private string categoryFilter = string.Empty;
-    private string sortBy = "name";
 
-    private int receivedTransfers => transfers.Count(t => t.ToWarehouseId == warehouse?.Id);
-    private int sentTransfers => transfers.Count(t => t.FromWarehouseId == warehouse?.Id);
-    private int totalTransferredQuantity => transfers.Sum(t => t.Quantity);
+    // Для накладной
+    private bool showInvoiceModal = false;
+    private bool isLoadingInvoice = false;
+    private string invoiceContent = string.Empty;
 
     protected override async Task OnInitializedAsync()
     {
@@ -261,54 +258,25 @@
     {
         if (!string.IsNullOrEmpty(WarehouseId))
         {
-            warehouse = await WarehouseService.GetWarehouseAsync(WarehouseId);
-            if (warehouse != null)
+            try
             {
-                products = await WarehouseService.GetWarehouseProductsAsync(WarehouseId);
-                transfers = await WarehouseService.GetProductTransfersAsync(WarehouseId);
-                FilterProducts();
+                warehouse = await WarehouseService.GetWarehouseAsync(WarehouseId);
+                if (warehouse != null)
+                {
+                    products = await WarehouseService.GetWarehouseProductsAsync(WarehouseId);
+                    transfers = await WarehouseService.GetProductTransfersAsync(WarehouseId);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Ошибка загрузки данных склада: {ex.Message}");
             }
         }
     }
 
-    private void SwitchTab(string tabName)
-    {
-        activeTab = tabName;
-        StateHasChanged();
-    }
-
-    private void FilterProducts()
-    {
-        var query = products.AsEnumerable();
-
-        if (!string.IsNullOrWhiteSpace(searchTerm))
-        {
-            query = query.Where(p =>
-                p.Name.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
-                p.Description.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
-                p.Category.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)
-            );
-        }
-
-        if (!string.IsNullOrWhiteSpace(categoryFilter))
-        {
-            query = query.Where(p => p.Category == categoryFilter);
-        }
-
-        query = sortBy switch
-        {
-            "quantity" => query.OrderBy(p => p.Quantity),
-            "price" => query.OrderBy(p => p.Price),
-            "date" => query.OrderBy(p => p.UpdatedAt ?? p.CreatedAt),
-            _ => query.OrderBy(p => p.Name)
-        };
-
-        filteredProducts = query.ToList();
-    }
-
     private void GoBack()
     {
-        Navigation.NavigateTo("/dashboard/employee");
+        Navigation.NavigateTo("/dashboard/organization/manage");
     }
 
     private string GetQuantityClass(int quantity)
@@ -321,8 +289,37 @@
         };
     }
 
-    // Вычисляемые свойства для статистики
-    private int totalQuantity => products.Sum(p => p.Quantity);
-    private decimal totalValue => products.Sum(p => p.Quantity * p.Price);
-    private List<string> categories => products.Select(p => p.Category).Distinct().ToList();
+    private void SwitchTab(string tabName)
+    {
+        activeTab = tabName;
+        StateHasChanged();
+    }
+
+    // Методы для работы с накладной
+    private async Task ShowInvoice()
+    {
+        if (warehouse == null) return;
+
+        showInvoiceModal = true;
+        isLoadingInvoice = true;
+        StateHasChanged();
+
+        try
+        {
+            invoiceContent = await InvoiceService.GenerateInvoiceAsync(warehouse);
+        }
+        catch (Exception ex)
+        {
+            invoiceContent = $"Ошибка при генерации накладной: {ex.Message}";
+        }
+
+        isLoadingInvoice = false;
+        StateHasChanged();
+    }
+
+    private void CloseInvoiceModal()
+    {
+        showInvoiceModal = false;
+        invoiceContent = string.Empty;
+    }
 }

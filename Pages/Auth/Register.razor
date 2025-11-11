@@ -1,17 +1,26 @@
-﻿@page "/register"
+﻿@* Register.razor *@
+@page "/auth/register"
 @using StockhubWeb.Models
 @using StockhubWeb.Services
+@using StockhubWeb.Services.AuthService
+@using StockhubWeb.Services.InvoiceService
 @inject IAuthService AuthService
 @inject NavigationManager Navigation
 
 <div class="auth-container">
     <div class="auth-card">
         <div class="auth-header">
-            <h2><i class="fas fa-user-plus me-2"></i>Регистрация</h2>
-            <p class="text-muted">Создайте новый аккаунт</p>
+            <h2><i class="fas fa-user-plus me-2"></i>Регистрация организатора</h2>
+            <p class="text-muted">Создайте аккаунт для управления организацией</p>
         </div>
 
         <div class="auth-body">
+            <div class="alert alert-warning">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                <strong>Только для организаторов</strong><br>
+                После регистрации вы сможете создавать организации, склады и приглашать сотрудников.
+            </div>
+
             <div class="row">
                 <div class="col-md-6">
                     <div class="mb-3">
@@ -59,23 +68,31 @@
 
             @if (isLoading)
             {
-                <button class="btn btn-success w-100 mb-3" disabled="disabled">
+                <button class="btn btn-primary w-100 mb-3" disabled="disabled">
                     <span class="spinner-border spinner-border-sm me-2"></span>
-                    Регистрация...
+                    Регистрация организатора...
                 </button>
             }
             else
             {
-                <button class="btn btn-success w-100 mb-3" @onclick="PerformRegistration">
-                    Зарегистрироваться
+                <button class="btn btn-primary w-100 mb-3" @onclick="PerformRegistration">
+                    Зарегистрироваться как организатор
                 </button>
             }
 
             <div class="text-center">
                 <span class="text-muted">Уже есть аккаунт? </span>
-                <a href="/login" class="btn btn-link p-0" @onclick="NavigateToLogin">
-                    Войти
+                <a href="/auth/login" class="btn btn-link p-0">
+                    Войти в систему
                 </a>
+            </div>
+
+            <hr class="my-4" />
+
+            <div class="text-center">
+                <button class="btn btn-link p-0" @onclick="GoBack">
+                    ← Вернуться на главную
+                </button>
             </div>
         </div>
     </div>
@@ -98,7 +115,6 @@
 
     protected override void OnInitialized()
     {
-        // При загрузке страницы регистрации проверяем, не авторизован ли пользователь
         CheckAuthentication();
     }
 
@@ -107,7 +123,11 @@
         var isAuthenticated = await AuthService.IsAuthenticatedAsync();
         if (isAuthenticated)
         {
-            Navigation.NavigateTo("/dashboard/role-selection");
+            var user = await AuthService.GetCurrentUserAsync();
+            if (user?.Role == UserRole.Organizer)
+            {
+                Navigation.NavigateTo("/dashboard/organization/manage");
+            }
         }
     }
 
@@ -130,17 +150,8 @@
 
         if (result)
         {
-            // Проверяем, что пользователь действительно аутентифицирован
-            var isAuthenticated = await AuthService.IsAuthenticatedAsync();
-            if (isAuthenticated)
-            {
-                Navigation.NavigateTo("/dashboard/role-selection");
-            }
-            else
-            {
-                errorMessage = "Ошибка аутентификации после регистрации";
-                showError = true;
-            }
+            // После успешной регистрации редирект на панель организатора
+            Navigation.NavigateTo("/dashboard/organization/manage");
         }
         else
         {
@@ -192,9 +203,9 @@
         return true;
     }
 
-    private void NavigateToLogin()
+    private void GoBack()
     {
-        Navigation.NavigateTo("/login");
+        Navigation.NavigateTo("/");
     }
 
     private void DismissError()

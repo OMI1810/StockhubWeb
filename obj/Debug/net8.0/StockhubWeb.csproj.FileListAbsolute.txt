@@ -62,3 +62,4 @@ D:\project VS\StockhubWeb\StockhubWeb\obj\Debug\net8.0\refint\StockhubWeb.dll
 D:\project VS\StockhubWeb\StockhubWeb\obj\Debug\net8.0\StockhubWeb.pdb
 D:\project VS\StockhubWeb\StockhubWeb\obj\Debug\net8.0\StockhubWeb.genruntimeconfig.cache
 D:\project VS\StockhubWeb\StockhubWeb\obj\Debug\net8.0\ref\StockhubWeb.dll
+E:\VisualStudio\Project\StockhubWeb\StockhubWeb\bin\Debug\net8.0\Templates\InvoiceTemplate.txt
