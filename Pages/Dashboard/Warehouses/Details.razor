@@ -1,4 +1,5 @@
 ﻿@page "/dashboard/warehouses/{warehouseId}"
+@using Microsoft.JSInterop
 @using StockhubWeb.Models
 @using StockhubWeb.Services.AuthService
 @using StockhubWeb.Services.WarehouseService
@@ -7,6 +8,7 @@
 @inject IWarehouseService WarehouseService
 @inject IInvoiceService InvoiceService
 @inject NavigationManager Navigation
+@inject IJSRuntime JSRuntime
 
 <div class="container mt-4">
     @if (warehouse != null)
@@ -26,9 +28,9 @@
                 </div>
             </div>
             <div>
-                <button class="btn btn-info me-2" @onclick="ShowInvoice">
+                <button class="btn btn-info me-2" @onclick="ShowInvoicePdf">
                     <i class="fas fa-file-invoice me-1"></i>
-                    Накладная
+                    Просмотр накладной
                 </button>
                 <button class="btn btn-outline-secondary" @onclick="GoBack">
                     <i class="fas fa-arrow-left me-1"></i>
@@ -191,38 +193,47 @@
     }
 </div>
 
-<!-- Модальное окно накладной -->
+<!-- Модальное окно PDF накладной -->
 @if (showInvoiceModal)
 {
     <div class="modal show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
-        <div class="modal-dialog modal-xl">
-            <div class="modal-content">
-                <div class="modal-header">
+        <div class="modal-dialog modal-fullscreen">
+            <div class="modal-content" style="background: transparent; border: none;">
+                <!-- Упрощенная верхняя панель без кнопок -->
+                <div class="modal-header bg-dark text-white" style="border-bottom: 1px solid #444; height: 50px;">
                     <h5 class="modal-title">
-                        <i class="fas fa-file-invoice me-2"></i>
-                        Накладная склада
+                        <i class="fas fa-file-pdf me-2"></i>
+                        Накладная склада - @warehouse?.Name
                     </h5>
-                    <button type="button" class="btn-close" @onclick="CloseInvoiceModal"></button>
+                    <button type="button" class="btn-close btn-close-white" @onclick="CloseInvoiceModal" title="Закрыть"></button>
                 </div>
-                <div class="modal-body">
+
+                <!-- Контент PDF -->
+                <div class="modal-body p-0 bg-white">
                     @if (isLoadingInvoice)
                     {
-                        <div class="text-center py-4">
+                        <div class="text-center py-5">
                             <div class="spinner-border text-primary" role="status">
                                 <span class="visually-hidden">Загрузка...</span>
                             </div>
-                            <p class="mt-2">Генерация накладной...</p>
+                            <p class="mt-2">Генерация PDF накладной...</p>
                         </div>
                     }
-                    else if (!string.IsNullOrEmpty(invoiceContent))
+                    else if (showError)
                     {
-                        <div class="border p-3 bg-light">
-                            <pre class="mb-0" style="font-family: 'Courier New', monospace; font-size: 14px; white-space: pre-wrap;">@invoiceContent</pre>
+                        <div class="alert alert-danger m-3">
+                            <h5><i class="fas fa-exclamation-triangle me-2"></i>Ошибка загрузки накладной</h5>
+                            <p class="mb-2">@errorMessage</p>
                         </div>
                     }
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" @onclick="CloseInvoiceModal">Закрыть</button>
+                    else if (!string.IsNullOrEmpty(pdfBase64))
+                    {
+                        <iframe src="data:application/pdf;base64,@pdfBase64"
+                                style="width: 100%; height: calc(100vh - 50px);"
+                                frameborder="0">
+                            Ваш браузер не поддерживает отображение PDF.
+                        </iframe>
+                    }
                 </div>
             </div>
         </div>
@@ -242,7 +253,9 @@
     // Для накладной
     private bool showInvoiceModal = false;
     private bool isLoadingInvoice = false;
-    private string invoiceContent = string.Empty;
+    private bool showError = false;
+    private string errorMessage = string.Empty;
+    private string pdfBase64 = string.Empty;
 
     protected override async Task OnInitializedAsync()
     {
@@ -296,21 +309,28 @@
     }
 
     // Методы для работы с накладной
-    private async Task ShowInvoice()
+    private async Task ShowInvoicePdf()
     {
         if (warehouse == null) return;
 
         showInvoiceModal = true;
         isLoadingInvoice = true;
+        showError = false;
+        errorMessage = string.Empty;
+        pdfBase64 = string.Empty;
+
         StateHasChanged();
 
         try
         {
-            invoiceContent = await InvoiceService.GenerateInvoiceAsync(warehouse);
+            var pdfBytes = await InvoiceService.GenerateInvoicePdfAsync(warehouse);
+            pdfBase64 = Convert.ToBase64String(pdfBytes);
         }
         catch (Exception ex)
         {
-            invoiceContent = $"Ошибка при генерации накладной: {ex.Message}";
+            showError = true;
+            errorMessage = ex.Message;
+            Console.WriteLine($"Ошибка при генерации PDF накладной: {ex.Message}");
         }
 
         isLoadingInvoice = false;
@@ -320,6 +340,8 @@
     private void CloseInvoiceModal()
     {
         showInvoiceModal = false;
-        invoiceContent = string.Empty;
+        pdfBase64 = string.Empty;
+        showError = false;
+        errorMessage = string.Empty;
     }
 }

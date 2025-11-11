@@ -1,2 +1,1 @@
 wwwroot\css\site.css
-wwwroot\js\downloadTextFile.js
