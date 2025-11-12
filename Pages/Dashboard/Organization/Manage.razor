@@ -11,23 +11,36 @@
 @inject NavigationManager Navigation
 
 <div class="container mt-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h3>
+    <div class="d-flex justify-content-between align-items-center mb-4 header-flex">
+        <div class="header-content flex-grow-1 me-3">
+            <h3 class="mb-1 main-title adaptive-org-name">
                 <i class="fas fa-building me-2 text-primary"></i>
                 Управление организацией
                 @if (currentOrganization != null)
                 {
-                    <span class="text-primary">"@currentOrganization.Name"</span>
+                    <span class="text-primary org-name-responsive" title="@currentOrganization.Name">
+                        "@currentOrganization.Name"
+                    </span>
                 }
             </h3>
+            @if (currentOrganization != null)
+            {
+                <p class="text-muted mb-0 small org-name-truncate text-sm-adaptive" title="@currentOrganization.Name">
+                    Организация: @currentOrganization.Name
+                </p>
+            }
+            else
+            {
+                <p class="text-muted mb-0 small text-sm-adaptive">Панель управления складами и сотрудниками организации</p>
+            }
         </div>
-        <div class="d-flex align-items-center">
+        <div class="d-flex align-items-center header-actions flex-shrink-0">
             <button class="btn btn-outline-primary me-3" @onclick="ShowOrganizationsModal">
                 <i class="fas fa-list me-1"></i>
-                Организации
+                <span class="d-none d-md-inline">Организации</span>
+                <span class="d-md-none">Орг.</span>
             </button>
-            <span class="badge bg-primary fs-6">Организатор</span>
+            <span class="badge bg-primary">Организатор</span>
         </div>
     </div>
 
@@ -36,25 +49,25 @@
         <!-- Панель быстрых действий для текущей организации -->
         <div class="card mb-4">
             <div class="card-header bg-light d-flex justify-content-between align-items-center">
-                <h5 class="mb-0">Панель управления организацией</h5>
-                <span class="badge bg-secondary">@currentWarehouses.Count складов</span>
+                <h5 class="mb-0 text-md-adaptive">Панель управления организацией</h5>
+                <span class="badge bg-secondary badge-nowrap text-sm-adaptive">@currentWarehouses.Count складов</span>
             </div>
             <div class="card-body">
                 <div class="row">
                     <div class="col-md-4 mb-3">
-                        <button class="btn btn-primary w-100" @onclick="ShowCreateWarehouseModal">
+                        <button class="btn btn-primary w-100 text-sm-adaptive" @onclick="ShowCreateWarehouseModal">
                             <i class="fas fa-warehouse me-2"></i>
                             Добавить склад
                         </button>
                     </div>
                     <div class="col-md-4 mb-3">
-                        <button class="btn btn-success w-100" @onclick="ShowInviteEmployeeModal">
+                        <button class="btn btn-success w-100 text-sm-adaptive" @onclick="ShowInviteEmployeeModal">
                             <i class="fas fa-user-plus me-2"></i>
                             Добавить сотрудника
                         </button>
                     </div>
                     <div class="col-md-4 mb-3">
-                        <button class="btn btn-info w-100" @onclick="ShowOrganizationInfoModal">
+                        <button class="btn btn-info w-100 text-sm-adaptive" @onclick="ShowOrganizationInfoModal">
                             <i class="fas fa-info-circle me-2"></i>
                             Информация об организации
                         </button>
@@ -65,16 +78,17 @@
 
         <!-- Список складов текущей организации -->
         <div class="card">
-            <div class="card-header bg-light">
-                <h5 class="mb-0">Склады организации</h5>
+            <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                <h5 class="mb-0 text-md-adaptive">Склады организации</h5>
+                <span class="badge bg-secondary badge-nowrap text-sm-adaptive">@currentWarehouses.Count</span>
             </div>
             <div class="card-body">
                 @if (currentWarehouses.Count == 0)
                 {
                     <div class="text-center py-5">
                         <i class="fas fa-warehouse fa-3x text-muted mb-3"></i>
-                        <p class="text-muted">У вас пока нет складов в этой организации</p>
-                        <button class="btn btn-primary" @onclick="ShowCreateWarehouseModal">
+                        <p class="text-muted text-sm-adaptive">У вас пока нет складов в этой организации</p>
+                        <button class="btn btn-primary text-sm-adaptive" @onclick="ShowCreateWarehouseModal">
                             Создать первый склад
                         </button>
                     </div>
@@ -88,19 +102,21 @@
                                 <div class="card h-100 warehouse-card @(warehouse.IsActive ? "" : "border-warning")">
                                     <div class="card-body">
                                         <div class="d-flex justify-content-between align-items-start mb-2">
-                                            <h5 class="card-title">@warehouse.Name</h5>
-                                            <span class="badge @(warehouse.IsActive ? "bg-success" : "bg-warning")">
+                                            <h6 class="card-title card-title-truncate mb-0 me-2 adaptive-card-title" title="@warehouse.Name">
+                                                @warehouse.Name
+                                            </h6>
+                                            <span class="badge @(warehouse.IsActive ? "bg-success" : "bg-warning") badge-nowrap text-xs">
                                                 @(warehouse.IsActive ? "Активен" : "Неактивен")
                                             </span>
                                         </div>
-                                        <p class="card-text text-muted small">
+                                        <p class="card-text text-muted small card-text-truncate text-sm-adaptive" title="@warehouse.City, @warehouse.Address">
                                             <strong>@warehouse.City, @warehouse.Address</strong><br>
                                             Товаров: <strong>@warehouse.Products.Count</strong><br>
                                             Создан: <strong>@warehouse.CreatedAt.ToString("dd.MM.yyyy")</strong>
                                         </p>
                                     </div>
                                     <div class="card-footer bg-transparent">
-                                        <button class="btn btn-outline-primary btn-sm w-100"
+                                        <button class="btn btn-outline-primary btn-sm w-100 text-xs"
                                                 @onclick="@(() => OpenWarehouse(warehouse.Id))">
                                             <i class="fas fa-eye me-1"></i>
                                             Открыть склад
@@ -117,9 +133,9 @@
     else
     {
         <div class="alert alert-info">
-            <h4>Добро пожаловать!</h4>
-            <p>У вас пока нет организаций. Создайте свою первую организацию для управления складами и сотрудниками.</p>
-            <button class="btn btn-primary" @onclick="ShowOrganizationsModal">
+            <h4 class="text-md-adaptive">Добро пожаловать!</h4>
+            <p class="text-sm-adaptive">У вас пока нет организаций. Создайте свою первую организацию для управления складами и сотрудниками.</p>
+            <button class="btn btn-primary text-sm-adaptive" @onclick="ShowOrganizationsModal">
                 Создать первую организацию
             </button>
         </div>
@@ -133,7 +149,7 @@
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">
+                    <h5 class="modal-title text-md-adaptive">
                         <i class="fas fa-building me-2"></i>
                         Управление организациями
                     </h5>
@@ -143,7 +159,7 @@
                     @if (organizations.Count > 0)
                     {
                         <div class="mb-4">
-                            <h6>Ваши организации:</h6>
+                            <h6 class="text-md-adaptive">Ваши организации:</h6>
                             <div class="row">
                                 @foreach (var organization in organizations)
                                 {
@@ -151,13 +167,15 @@
                                         <div class="card h-100 organization-card @(organization.Id == currentOrganization?.Id ? "border-primary" : "")">
                                             <div class="card-body">
                                                 <div class="d-flex justify-content-between align-items-start mb-2">
-                                                    <h6 class="card-title mb-0">@organization.Name</h6>
+                                                    <h6 class="card-title card-title-truncate mb-0 me-2 adaptive-card-title" title="@organization.Name">
+                                                        @organization.Name
+                                                    </h6>
                                                     @if (organization.Id == currentOrganization?.Id)
                                                     {
-                                                        <span class="badge bg-primary">Текущая</span>
+                                                        <span class="badge bg-primary badge-nowrap text-xs">Текущая</span>
                                                     }
                                                 </div>
-                                                <p class="card-text text-muted small mb-2">
+                                                <p class="card-text text-muted small mb-2 card-text-truncate text-sm-adaptive">
                                                     Создана: <strong>@organization.CreatedAt.ToString("dd.MM.yyyy")</strong><br>
                                                     Сотрудников: <strong>@GetEmployeeCount(organization.Id)</strong><br>
                                                     Складов: <strong>@GetWarehouseCount(organization.Id)</strong>
@@ -165,7 +183,7 @@
                                             </div>
                                             <div class="card-footer bg-transparent py-2">
                                                 <div class="d-grid gap-1">
-                                                    <button class="btn @(organization.Id == currentOrganization?.Id ? "btn-primary" : "btn-outline-primary") btn-sm"
+                                                    <button class="btn @(organization.Id == currentOrganization?.Id ? "btn-primary" : "btn-outline-primary") btn-sm text-xs"
                                                             @onclick="@(() => SwitchOrganization(organization.Id))">
                                                         <i class="fas @(organization.Id == currentOrganization?.Id ? "fa-check" : "fa-exchange-alt") me-1"></i>
                                                         @(organization.Id == currentOrganization?.Id ? "Текущая" : "Выбрать")
@@ -182,19 +200,19 @@
                     {
                         <div class="text-center py-4">
                             <i class="fas fa-building fa-3x text-muted mb-3"></i>
-                            <p class="text-muted">У вас пока нет организаций</p>
+                            <p class="text-muted text-sm-adaptive">У вас пока нет организаций</p>
                         </div>
                     }
 
                     <div class="border-top pt-3">
-                        <button class="btn btn-success w-100" @onclick="ShowCreateOrganizationModal">
+                        <button class="btn btn-success w-100 text-sm-adaptive" @onclick="ShowCreateOrganizationModal">
                             <i class="fas fa-plus-circle me-2"></i>
                             Создать новую организацию
                         </button>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" @onclick="CloseOrganizationsModal">Закрыть</button>
+                    <button type="button" class="btn btn-secondary text-sm-adaptive" @onclick="CloseOrganizationsModal">Закрыть</button>
                 </div>
             </div>
         </div>

@@ -13,50 +13,87 @@
 <div class="container mt-4">
     @if (warehouse != null)
     {
-        <!-- Заголовок склада -->
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <div>
-                <h2>
-                    <i class="fas fa-warehouse me-2 text-primary"></i>
-                    @warehouse?.Name
+        <!-- Заголовок склада с вертикальными кнопками -->
+        <div class="d-flex justify-content-between align-items-start mb-4 header-layout-responsive">
+            <div class="warehouse-info-responsive flex-grow-1 me-md-4">
+                <h2 class="warehouse-title-responsive text-primary">
+                    <i class="fas fa-warehouse me-2"></i>
+                    @warehouse.Name
                 </h2>
-                <div class="text-muted">
-                    <span class="badge @(warehouse.IsActive ? "bg-success" : "bg-warning") me-2">
+                <div class="warehouse-subtitle-responsive text-muted">
+                    <span class="badge @(warehouse.IsActive ? "bg-success" : "bg-warning") me-2 warehouse-badge-responsive">
                         @(warehouse.IsActive ? "Активен" : "Неактивен")
                     </span>
                     <small>Товаров: @products.Count</small>
+                    @if (!string.IsNullOrEmpty(warehouse.Address))
+                    {
+                        <div class="mt-1">
+                            <small><strong>@warehouse.City, @warehouse.Address</strong></small>
+                        </div>
+                    }
+                    @if (!string.IsNullOrEmpty(warehouse.Region) || !string.IsNullOrEmpty(warehouse.Country))
+                    {
+                        <div class="mt-1">
+                            <small>
+                                @if (!string.IsNullOrEmpty(warehouse.Region))
+                                {
+                                    <text>@warehouse.Region</text>
+                                }
+                                @if (!string.IsNullOrEmpty(warehouse.Region) && !string.IsNullOrEmpty(warehouse.Country))
+                                {
+                                    <text>, </text>
+                                }
+                                @if (!string.IsNullOrEmpty(warehouse.Country))
+                                {
+                                    <text>@warehouse.Country</text>
+                                }
+                                @if (!string.IsNullOrEmpty(warehouse.PostalCode))
+                                {
+                                    <text> (@warehouse.PostalCode)</text>
+                                }
+                            </small>
+                        </div>
+                    }
                 </div>
-            </div>
-            <div>
-                <button class="btn btn-info me-2" @onclick="ShowInvoicePdf">
-                    <i class="fas fa-file-alt me-1"></i>
-                    Документ остатков
-                </button>
-                <button class="btn btn-success me-2" @onclick="ShowCreateOrderModal">
-                    <i class="fas fa-shopping-cart me-1"></i>
-                    Документ заказа
-                </button>
-                <button class="btn btn-outline-secondary" @onclick="GoBack">
-                    <i class="fas fa-arrow-left me-1"></i>
-                    Назад
-                </button>
             </div>
         </div>
 
+        <div class="header-actions-vertical flex-shrink-0">
+            <div class="btn-vertical-group">
+                <button class="btn btn-info btn-responsive" @onclick="ShowInvoicePdf">
+                    <i class="fas fa-file-alt me-2"></i>
+                    <span>Документ остатков</span>
+                </button>
+                <button class="btn btn-success btn-responsive" @onclick="ShowCreateOrderModal">
+                    <i class="fas fa-shopping-cart me-2"></i>
+                    <span>Документ заказа</span>
+                </button>
+                <button class="btn btn-outline-secondary btn-responsive" @onclick="GoBack">
+                    <i class="fas fa-arrow-left me-2"></i>
+                    <span>Назад к организациям</span>
+                </button>
+            </div>
+        </div>
+       
+
         <!-- Навигация по вкладкам -->
-        <ul class="nav nav-tabs mb-4">
+        <ul class="nav nav-tabs mb-4 nav-tabs-responsive">
             <li class="nav-item">
                 <a class="nav-link @(activeTab == "products" ? "active" : "")"
                    @onclick='() => SwitchTab("products")'>
                     <i class="fas fa-boxes me-1"></i>
-                    Товары (@products.Count)
+                    <span class="d-none d-sm-inline">Товары</span>
+                    <span class="d-sm-none">Тов.</span>
+                    (@products.Count)
                 </a>
             </li>
             <li class="nav-item">
                 <a class="nav-link @(activeTab == "transfers" ? "active" : "")"
                    @onclick='() => SwitchTab("transfers")'>
                     <i class="fas fa-exchange-alt me-1"></i>
-                    История перемещений (@transfers.Count)
+                    <span class="d-none d-sm-inline">История перемещений</span>
+                    <span class="d-sm-none">Перемещ.</span>
+                    (@transfers.Count)
                 </a>
             </li>
         </ul>
@@ -66,14 +103,17 @@
             <!-- Вкладка товаров -->
             <div class="card">
                 <div class="card-header bg-light">
-                    <h5 class="mb-0">Товары на складе</h5>
+                    <h5 class="mb-0 card-header-responsive">
+                        <i class="fas fa-boxes me-2"></i>
+                        Товары на складе
+                    </h5>
                 </div>
                 <div class="card-body p-0">
                     @if (products.Count == 0)
                     {
                         <div class="text-center py-5">
                             <i class="fas fa-boxes fa-3x text-muted mb-3"></i>
-                            <p class="text-muted">Товары не найдены</p>
+                            <p class="text-muted text-adaptive-md">Товары не найдены</p>
                         </div>
                     }
                     else
@@ -82,11 +122,11 @@
                             <table class="table table-hover mb-0">
                                 <thead class="table-light">
                                     <tr>
-                                        <th>Название</th>
-                                        <th>Категория</th>
-                                        <th>Количество</th>
-                                        <th>Цена</th>
-                                        <th>Общая стоимость</th>
+                                        <th class="text-adaptive-sm">Название</th>
+                                        <th class="text-adaptive-sm">Категория</th>
+                                        <th class="text-adaptive-sm">Количество</th>
+                                        <th class="text-adaptive-sm">Цена</th>
+                                        <th class="text-adaptive-sm">Общая стоимость</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -94,7 +134,7 @@
                                     {
                                         <tr>
                                             <td>
-                                                <div>
+                                                <div class="text-adaptive-sm">
                                                     <strong>@product.Name</strong>
                                                     @if (!string.IsNullOrEmpty(product.Description))
                                                     {
@@ -104,16 +144,16 @@
                                                 </div>
                                             </td>
                                             <td>
-                                                <span class="badge bg-secondary">@product.Category</span>
+                                                <span class="badge bg-secondary text-adaptive-sm">@product.Category</span>
                                             </td>
                                             <td>
-                                                <span class="@GetQuantityClass(product.Quantity) fw-bold">
+                                                <span class="@GetQuantityClass(product.Quantity) fw-bold text-adaptive-sm">
                                                     @product.Quantity
                                                 </span>
                                             </td>
-                                            <td>@product.Price.ToString("C")</td>
+                                            <td class="text-adaptive-sm">@product.Price.ToString("C")</td>
                                             <td>
-                                                <strong class="text-success">
+                                                <strong class="text-success text-adaptive-sm">
                                                     @((product.Quantity * product.Price).ToString("C"))
                                                 </strong>
                                             </td>
@@ -131,14 +171,17 @@
             <!-- Вкладка истории перемещений -->
             <div class="card">
                 <div class="card-header bg-light">
-                    <h5 class="mb-0">История перемещений товаров</h5>
+                    <h5 class="mb-0 card-header-responsive">
+                        <i class="fas fa-exchange-alt me-2"></i>
+                        История перемещений товаров
+                    </h5>
                 </div>
                 <div class="card-body p-0">
                     @if (transfers.Count == 0)
                     {
                         <div class="text-center py-5">
                             <i class="fas fa-exchange-alt fa-3x text-muted mb-3"></i>
-                            <p class="text-muted">Перемещения не найдены</p>
+                            <p class="text-muted text-adaptive-md">Перемещения не найдены</p>
                         </div>
                     }
                     else
@@ -147,11 +190,11 @@
                             <table class="table table-hover mb-0">
                                 <thead class="table-light">
                                     <tr>
-                                        <th>Дата</th>
-                                        <th>Товар</th>
-                                        <th>Откуда</th>
-                                        <th>Куда</th>
-                                        <th>Количество</th>
+                                        <th class="text-adaptive-sm">Дата</th>
+                                        <th class="text-adaptive-sm">Товар</th>
+                                        <th class="text-adaptive-sm">Откуда</th>
+                                        <th class="text-adaptive-sm">Куда</th>
+                                        <th class="text-adaptive-sm">Количество</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -159,21 +202,21 @@
                                     {
                                         <tr>
                                             <td>
-                                                <small class="text-muted">
+                                                <small class="text-muted text-adaptive-sm">
                                                     @transfer.TransferDate.ToString("dd.MM.yyyy")
                                                 </small>
                                             </td>
                                             <td>
-                                                <strong>@transfer.ProductName</strong>
+                                                <strong class="text-adaptive-sm">@transfer.ProductName</strong>
                                             </td>
                                             <td>
-                                                <span class="text-muted">@transfer.FromWarehouseName</span>
+                                                <span class="text-muted text-adaptive-sm">@transfer.FromWarehouseName</span>
                                             </td>
                                             <td>
-                                                <span class="text-muted">@transfer.ToWarehouseName</span>
+                                                <span class="text-muted text-adaptive-sm">@transfer.ToWarehouseName</span>
                                             </td>
                                             <td>
-                                                <span class="fw-bold">@transfer.Quantity</span>
+                                                <span class="fw-bold text-adaptive-sm">@transfer.Quantity</span>
                                             </td>
                                         </tr>
                                     }
@@ -188,9 +231,9 @@
     else
     {
         <div class="alert alert-warning">
-            <h4>Склад не найден</h4>
-            <p>Запрашиваемый склад не существует или у вас нет к нему доступа.</p>
-            <button class="btn btn-primary" @onclick="GoBack">
+            <h4 class="text-adaptive-lg">Склад не найден</h4>
+            <p class="text-adaptive-md">Запрашиваемый склад не существует или у вас нет к нему доступа.</p>
+            <button class="btn btn-primary btn-responsive-lg" @onclick="GoBack">
                 Вернуться назад
             </button>
         </div>
@@ -204,7 +247,7 @@
         <div class="modal-dialog modal-fullscreen">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">
+                    <h5 class="modal-title text-adaptive-md">
                         <i class="fas fa-file-pdf me-2"></i>
                         Накладная склада - @warehouse?.Name
                     </h5>
@@ -217,16 +260,16 @@
                             <div class="spinner-border text-primary" role="status">
                                 <span class="visually-hidden">Загрузка...</span>
                             </div>
-                            <p>Генерация PDF накладной...</p>
+                            <p class="text-adaptive-md">Генерация PDF накладной...</p>
                         </div>
                     }
                     else if (showError)
                     {
                         <div class="pdf-error">
                             <i class="fas fa-exclamation-triangle"></i>
-                            <h5>Ошибка загрузки накладной</h5>
-                            <p>@errorMessage</p>
-                            <button class="btn btn-primary mt-2" @onclick="CloseInvoiceModal">
+                            <h5 class="text-adaptive-lg">Ошибка загрузки накладной</h5>
+                            <p class="text-adaptive-md">@errorMessage</p>
+                            <button class="btn btn-primary mt-2 btn-responsive" @onclick="CloseInvoiceModal">
                                 Закрыть
                             </button>
                         </div>
@@ -249,6 +292,7 @@
     <div class="modal-backdrop show"></div>
 }
 
+<!-- Модальное окно создания заказа -->
 @if (showCreateOrderModal)
 {
     <div class="modal show d-block" tabindex="-1">
@@ -385,6 +429,7 @@
     private string errorMessage = string.Empty;
     private string pdfBase64 = string.Empty;
 
+    // Для модального окна заказа
     private bool showCreateOrderModal = false;
     private string orderWarehouseType = "internal";
     private string selectedInternalWarehouse = string.Empty;
@@ -488,29 +533,20 @@
         errorMessage = string.Empty;
     }
 
+    // Методы для модального окна заказа
     private void ShowCreateOrderModal()
     {
         showCreateOrderModal = true;
-        orderWarehouseType = "internal";
-        selectedInternalWarehouse = string.Empty;
-        externalWarehouseAddress = string.Empty;
-        orderNotes = string.Empty;
-        orderItems = new List<OrderItem> { new OrderItem() };
-
-        // Загружаем склады организации
-        LoadOrganizationWarehouses();
-    }
-
-    private async void LoadOrganizationWarehouses()
-    {
-        if (warehouse != null)
-        {
-            organizationWarehouses = await WarehouseService.GetOrganizationWarehousesAsync(warehouse.OrganizationId);
-        }
     }
 
     private void CloseCreateOrderModal()
     {
+        showCreateOrderModal = false;
+    }
+
+    private void CreateOrder()
+    {
+        // Логика создания заказа
         showCreateOrderModal = false;
     }
 
@@ -527,14 +563,5 @@
             orderItems.RemoveAt(index);
             StateHasChanged();
         }
-    }
-
-    private void CreateOrder()
-    {
-        // Здесь логика создания заказа
-        // Можно добавить валидацию и отправку данных
-
-        showCreateOrderModal = false;
-        // Показать сообщение об успехе
     }
 }
