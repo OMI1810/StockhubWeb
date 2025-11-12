@@ -23,6 +23,7 @@ namespace StockhubWeb.Services.AuthService
         {
             var organizer = new User
             {
+                Id = "test-organizer-id",
                 Email = "organizer@example.com",
                 Password = "123456",
                 FirstName = "Иван",
@@ -39,12 +40,13 @@ namespace StockhubWeb.Services.AuthService
         {
             var employee = new User
             {
+                Id = "test-employee-id",
                 Email = "employee@example.com",
                 Password = "123456",
                 FirstName = "Мария",
                 LastName = "Сидорова",
                 Role = UserRole.Employee,
-                OrganizationId = _users.First(u => u.Role == UserRole.Organizer).Id
+                OrganizationId = "test-org-id"
             };
             _users.Add(employee);
         }
@@ -72,7 +74,7 @@ namespace StockhubWeb.Services.AuthService
             if (_users.Any(u => u.Email == request.Email))
                 return false;
 
-            // При регистрации пользователь всегда становится организатором
+            // При регистрации пользователь становится организатором или сотрудником в зависимости от выбора
             var user = new User
             {
                 Email = request.Email,
@@ -81,15 +83,14 @@ namespace StockhubWeb.Services.AuthService
                 LastName = request.LastName,
                 MiddleName = request.MiddleName,
                 HasMiddleName = request.HasMiddleName,
-                Role = UserRole.Organizer // Всегда организатор
+                Role = request.Role // Используем роль из запроса
             };
 
             _users.Add(user);
             _currentUser = user;
 
-            // Автоматически создаем организацию для нового организатора
-            var orgName = $"{user.FirstName} {user.LastName}";
-            await _organizationService.CreateOrganizationAsync(orgName, "default123", user.Id);
+            // УБИРАЕМ автоматическое создание организации
+            // Организатор сам создаст организации через интерфейс
 
             return true;
         }

@@ -595,7 +595,7 @@ main {
 .text-danger { color: #dc3545 !important; }
 .text-warning { color: #ffc107 !important; }
 .text-info { color: #17a2b8 !important; }
-.text-muted { color: #6c757d !important; }
+.text-muted { color: white !important; }
 .text-white { color: white !important; }
 
 /* Фоновые утилиты */
@@ -922,3 +922,127 @@ main {
     right: 0.75rem;
     top: 0.5rem;
 }
+
+.modal-fullscreen {
+    width: 100vw;
+    max-width: none;
+    height: 100vh;
+    margin: 0;
+}
+
+    .modal-fullscreen .modal-content {
+        height: 100vh;
+        border: none;
+        border-radius: 0;
+    }
+
+    .modal-fullscreen .modal-header {
+        border-bottom: 1px solid #dee2e6;
+        padding: 0.75rem 1rem;
+        background-color: #f8f9fa;
+    }
+
+    .modal-fullscreen .modal-body {
+        padding: 0;
+        flex: 1;
+        background-color: white;
+    }
+
+/* Специфичные стили для PDF просмотра */
+.pdf-viewer-modal .modal-dialog {
+    max-width: none;
+    margin: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.pdf-viewer-modal .modal-content {
+    height: 100vh;
+    border-radius: 0;
+    border: none;
+}
+
+.pdf-viewer-modal .modal-header {
+    background-color: #343a40;
+    color: white;
+    border-bottom: 1px solid #454d55;
+    padding: 0.5rem 1rem;
+    height: 50px;
+}
+
+.pdf-viewer-modal .modal-body {
+    padding: 0;
+    background-color: #f8f9fa;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.pdf-viewer-modal iframe {
+    width: 100%;
+    height: calc(100vh - 50px);
+    border: none;
+}
+
+/* Улучшенные стили для кнопки закрытия в темной теме */
+.pdf-viewer-modal .btn-close {
+    filter: invert(1) grayscale(100%) brightness(200%);
+    opacity: 0.8;
+}
+
+    .pdf-viewer-modal .btn-close:hover {
+        opacity: 1;
+    }
+
+/* Анимация появления модального окна */
+.modal.fade .modal-dialog {
+    transform: scale(0.8);
+    transition: transform 0.3s ease-out;
+}
+
+.modal.show .modal-dialog {
+    transform: scale(1);
+}
+
+/* Адаптивность для мобильных устройств */
+@media (max-width: 767.98px) {
+    .pdf-viewer-modal .modal-header {
+        padding: 0.5rem;
+    }
+
+    .pdf-viewer-modal .modal-title {
+        font-size: 1rem;
+    }
+
+    .pdf-viewer-modal iframe {
+        height: calc(100vh - 50px);
+    }
+}
+
+/* Стили для состояния загрузки */
+.pdf-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 200px;
+    color: #6c757d;
+}
+
+    .pdf-loading .spinner-border {
+        width: 3rem;
+        height: 3rem;
+        margin-bottom: 1rem;
+    }
+
+/* Стили для ошибки загрузки PDF */
+.pdf-error {
+    text-align: center;
+    padding: 2rem;
+    color: #dc3545;
+}
+
+    .pdf-error .fas {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+    }

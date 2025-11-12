@@ -8,42 +8,62 @@
 @inject IOrganizationService OrganizationService
 @inject NavigationManager Navigation
 
-<div class="container mt-5">
+<div class="container mt-4">
+    <!-- Заголовок -->
+    <div class="text-center mb-5">
+        <h1 class="display-5 text-primary">
+            <i class="fas fa-building me-2"></i>
+            Создание организации
+        </h1>
+        <p class="lead text-muted">Создайте свою первую организацию для управления складами и сотрудниками</p>
+    </div>
+
+    <!-- Карточка создания организации -->
     <div class="row justify-content-center">
-        <div class="col-md-6">
-            <div class="card shadow">
-                <div class="card-header bg-primary text-white">
-                    <h4 class="mb-0">
+        <div class="col-md-8 col-lg-6">
+            <div class="card shadow-lg border-0">
+                <div class="card-header bg-primary text-white py-3">
+                    <h4 class="mb-0 text-center">
                         <i class="fas fa-plus-circle me-2"></i>
-                        Создание организации
+                        Новая организация
                     </h4>
                 </div>
                 <div class="card-body p-4">
                     <div class="mb-3">
-                        <label class="form-label">Название организации *</label>
-                        <input @bind="organizationName" class="form-control" placeholder="Введите название вашей организации" />
+                        <label class="form-label fw-bold">Название организации *</label>
+                        <input @bind="organizationName" class="form-control form-control-lg"
+                               placeholder="Введите название вашей организации" />
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label">Пароль организации *</label>
-                        <input type="password" @bind="organizationPassword" class="form-control" placeholder="Придумайте пароль для организации" />
+                        <label class="form-label fw-bold">Пароль организации *</label>
+                        <input type="password" @bind="organizationPassword" class="form-control"
+                               placeholder="Придумайте пароль для организации" />
                         <small class="form-text text-muted">
                             Этот пароль понадобится сотрудникам для присоединения к вашей организации
                         </small>
                     </div>
 
-                    <div class="mb-3">
-                        <label class="form-label">Подтверждение пароля *</label>
-                        <input type="password" @bind="confirmPassword" class="form-control" placeholder="Подтвердите пароль организации" />
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">Подтверждение пароля *</label>
+                        <input type="password" @bind="confirmPassword" class="form-control"
+                               placeholder="Подтвердите пароль организации" />
                     </div>
 
-                    <button class="btn btn-success w-100" @onclick="CreateOrganization" disabled="@isLoading">
+                    <button class="btn btn-success w-100 py-2 fw-bold" @onclick="CreateOrganization" disabled="@isLoading">
                         @if (isLoading)
                         {
                             <span class="spinner-border spinner-border-sm me-2"></span>
                         }
+                        <i class="fas fa-rocket me-2"></i>
                         Создать организацию
                     </button>
+
+                    <div class="text-center mt-3">
+                        <small class="text-muted">
+                            После создания организации вы сможете добавлять склады и приглашать сотрудников
+                        </small>
+                    </div>
                 </div>
             </div>
         </div>
@@ -61,7 +81,7 @@
         var user = await AuthService.GetCurrentUserAsync();
         if (user == null || user.Role != UserRole.Organizer)
         {
-            Navigation.NavigateTo("/auth/organizer/login");
+            Navigation.NavigateTo("/auth/login");
         }
     }
 

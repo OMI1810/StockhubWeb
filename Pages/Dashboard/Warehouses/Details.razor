@@ -18,7 +18,7 @@
             <div>
                 <h2>
                     <i class="fas fa-warehouse me-2 text-primary"></i>
-                    @warehouse.Name
+                    @warehouse?.Name
                 </h2>
                 <div class="text-muted">
                     <span class="badge @(warehouse.IsActive ? "bg-success" : "bg-warning") me-2">
@@ -29,8 +29,12 @@
             </div>
             <div>
                 <button class="btn btn-info me-2" @onclick="ShowInvoicePdf">
-                    <i class="fas fa-file-invoice me-1"></i>
-                    Просмотр накладной
+                    <i class="fas fa-file-alt me-1"></i>
+                    Документ остатков
+                </button>
+                <button class="btn btn-success me-2" @onclick="ShowCreateOrderModal">
+                    <i class="fas fa-shopping-cart me-1"></i>
+                    Документ заказа
                 </button>
                 <button class="btn btn-outline-secondary" @onclick="GoBack">
                     <i class="fas fa-arrow-left me-1"></i>
@@ -196,44 +200,168 @@
 <!-- Модальное окно PDF накладной -->
 @if (showInvoiceModal)
 {
-    <div class="modal show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+    <div class="modal show d-block pdf-viewer-modal" tabindex="-1" style="background-color: rgba(0,0,0,0.8);">
         <div class="modal-dialog modal-fullscreen">
-            <div class="modal-content" style="background: transparent; border: none;">
-                <!-- Упрощенная верхняя панель без кнопок -->
-                <div class="modal-header bg-dark text-white" style="border-bottom: 1px solid #444; height: 50px;">
+            <div class="modal-content">
+                <div class="modal-header">
                     <h5 class="modal-title">
                         <i class="fas fa-file-pdf me-2"></i>
                         Накладная склада - @warehouse?.Name
                     </h5>
-                    <button type="button" class="btn-close btn-close-white" @onclick="CloseInvoiceModal" title="Закрыть"></button>
+                    <button type="button" class="btn-close" @onclick="CloseInvoiceModal"></button>
                 </div>
-
-                <!-- Контент PDF -->
-                <div class="modal-body p-0 bg-white">
+                <div class="modal-body">
                     @if (isLoadingInvoice)
                     {
-                        <div class="text-center py-5">
+                        <div class="pdf-loading">
                             <div class="spinner-border text-primary" role="status">
                                 <span class="visually-hidden">Загрузка...</span>
                             </div>
-                            <p class="mt-2">Генерация PDF накладной...</p>
+                            <p>Генерация PDF накладной...</p>
                         </div>
                     }
                     else if (showError)
                     {
-                        <div class="alert alert-danger m-3">
-                            <h5><i class="fas fa-exclamation-triangle me-2"></i>Ошибка загрузки накладной</h5>
-                            <p class="mb-2">@errorMessage</p>
+                        <div class="pdf-error">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <h5>Ошибка загрузки накладной</h5>
+                            <p>@errorMessage</p>
+                            <button class="btn btn-primary mt-2" @onclick="CloseInvoiceModal">
+                                Закрыть
+                            </button>
                         </div>
                     }
                     else if (!string.IsNullOrEmpty(pdfBase64))
                     {
                         <iframe src="data:application/pdf;base64,@pdfBase64"
-                                style="width: 100%; height: calc(100vh - 50px);"
+                                style="width: 100%; height: 100%;"
                                 frameborder="0">
                             Ваш браузер не поддерживает отображение PDF.
+                            <a href="data:application/pdf;base64,@pdfBase64" download="накладная.pdf">
+                                Скачайте файл
+                            </a>
                         </iframe>
                     }
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-backdrop show"></div>
+}
+
+@if (showCreateOrderModal)
+{
+    <div class="modal show d-block" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-shopping-cart me-2"></i>
+                        Создание заказа
+                    </h5>
+                    <button type="button" class="btn-close" @onclick="CloseCreateOrderModal"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Выбор типа склада -->
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">Тип склада *</label>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio"
+                                   @onchange="@(() => orderWarehouseType = "internal")"
+                                   checked="@(orderWarehouseType == "internal")" />
+                            <label class="form-check-label">
+                                Наш склад
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio"
+                                   @onchange="@(() => orderWarehouseType = "external")"
+                                   checked="@(orderWarehouseType == "external")" />
+                            <label class="form-check-label">
+                                Сторонний склад
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Поля в зависимости от выбора -->
+                    @if (orderWarehouseType == "internal")
+                    {
+                        <div class="mb-3">
+                            <label class="form-label">Выберите склад *</label>
+                            <select @bind="selectedInternalWarehouse" class="form-select">
+                                <option value="">Выберите склад...</option>
+                                @foreach (var wh in organizationWarehouses)
+                                {
+                                    <option value="@wh.Id">@wh.Name - @wh.City, @wh.Address</option>
+                                }
+                            </select>
+                        </div>
+                    }
+                    else if (orderWarehouseType == "external")
+                    {
+                        <div class="mb-3">
+                            <label class="form-label">Адрес стороннего склада *</label>
+                            <input @bind="externalWarehouseAddress" class="form-control"
+                                   placeholder="Введите полный адрес склада" />
+                        </div>
+                    }
+
+                    <!-- Поля для товаров -->
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Товары в заказе</label>
+
+                        @for (int i = 0; i < orderItems.Count; i++)
+                        {
+                            var index = i;
+                            <div class="card mb-2">
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-5">
+                                            <label class="form-label">Название товара *</label>
+                                            <input @bind="orderItems[index].ProductName" class="form-control"
+                                                   placeholder="Введите название товара" />
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label class="form-label">Количество *</label>
+                                            <input type="number" @bind="orderItems[index].Quantity"
+                                                   class="form-control" placeholder="0" min="1" />
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label class="form-label">Цена за единицу</label>
+                                            <input type="number" @bind="orderItems[index].Price"
+                                                   class="form-control" placeholder="0.00" step="0.01" />
+                                        </div>
+                                        <div class="col-md-1">
+                                            <label class="form-label">&nbsp;</label>
+                                            <button class="btn btn-outline-danger w-100"
+                                                    @onclick="@(() => RemoveOrderItem(index))">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+
+                        <button class="btn btn-outline-primary btn-sm" @onclick="AddOrderItem">
+                            <i class="fas fa-plus me-1"></i>
+                            Добавить товар
+                        </button>
+                    </div>
+
+                    <!-- Дополнительная информация -->
+                    <div class="mb-3">
+                        <label class="form-label">Примечания к заказу</label>
+                        <textarea @bind="orderNotes" class="form-control" rows="3"
+                                  placeholder="Дополнительная информация о заказе..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @onclick="CloseCreateOrderModal">Отмена</button>
+                    <button type="button" class="btn btn-primary" @onclick="CreateOrder">
+                        <i class="fas fa-check me-1"></i>
+                        Создать заказ
+                    </button>
                 </div>
             </div>
         </div>
@@ -256,6 +384,21 @@
     private bool showError = false;
     private string errorMessage = string.Empty;
     private string pdfBase64 = string.Empty;
+
+    private bool showCreateOrderModal = false;
+    private string orderWarehouseType = "internal";
+    private string selectedInternalWarehouse = string.Empty;
+    private string externalWarehouseAddress = string.Empty;
+    private string orderNotes = string.Empty;
+    private List<OrderItem> orderItems = new();
+    private List<Warehouse> organizationWarehouses = new();
+
+    public class OrderItem
+    {
+        public string ProductName { get; set; } = string.Empty;
+        public int Quantity { get; set; } = 1;
+        public decimal Price { get; set; }
+    }
 
     protected override async Task OnInitializedAsync()
     {
@@ -343,5 +486,55 @@
         pdfBase64 = string.Empty;
         showError = false;
         errorMessage = string.Empty;
+    }
+
+    private void ShowCreateOrderModal()
+    {
+        showCreateOrderModal = true;
+        orderWarehouseType = "internal";
+        selectedInternalWarehouse = string.Empty;
+        externalWarehouseAddress = string.Empty;
+        orderNotes = string.Empty;
+        orderItems = new List<OrderItem> { new OrderItem() };
+
+        // Загружаем склады организации
+        LoadOrganizationWarehouses();
+    }
+
+    private async void LoadOrganizationWarehouses()
+    {
+        if (warehouse != null)
+        {
+            organizationWarehouses = await WarehouseService.GetOrganizationWarehousesAsync(warehouse.OrganizationId);
+        }
+    }
+
+    private void CloseCreateOrderModal()
+    {
+        showCreateOrderModal = false;
+    }
+
+    private void AddOrderItem()
+    {
+        orderItems.Add(new OrderItem());
+        StateHasChanged();
+    }
+
+    private void RemoveOrderItem(int index)
+    {
+        if (orderItems.Count > 1)
+        {
+            orderItems.RemoveAt(index);
+            StateHasChanged();
+        }
+    }
+
+    private void CreateOrder()
+    {
+        // Здесь логика создания заказа
+        // Можно добавить валидацию и отправку данных
+
+        showCreateOrderModal = false;
+        // Показать сообщение об успехе
     }
 }
