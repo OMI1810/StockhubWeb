@@ -66,7 +66,7 @@
                 </button>
                 <button class="btn btn-success btn-responsive" @onclick="ShowCreateOrderModal">
                     <i class="fas fa-shopping-cart me-2"></i>
-                    <span>Документ заказа</span>
+                    <span>Создать заказ</span>
                 </button>
                 <button class="btn btn-outline-secondary btn-responsive" @onclick="GoBack">
                     <i class="fas fa-arrow-left me-2"></i>
@@ -249,7 +249,7 @@
                 <div class="modal-header">
                     <h5 class="modal-title text-adaptive-md">
                         <i class="fas fa-file-pdf me-2"></i>
-                        Накладная склада - @warehouse?.Name
+                        Остатки склада - @warehouse?.Name
                     </h5>
                     <button type="button" class="btn-close" @onclick="CloseInvoiceModal"></button>
                 </div>
@@ -299,95 +299,74 @@
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">
+                    <h5 class="modal-title text-adaptive-lg">
                         <i class="fas fa-shopping-cart me-2"></i>
                         Создание заказа
                     </h5>
                     <button type="button" class="btn-close" @onclick="CloseCreateOrderModal"></button>
                 </div>
-                <div class="modal-body">
-                    <!-- Выбор типа склада -->
+                <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
+                    <!-- Выбор склада -->
                     <div class="mb-4">
-                        <label class="form-label fw-bold">Тип склада *</label>
-                        <div class="form-check">
-                            <input class="form-check-input" type="radio"
-                                   @onchange="@(() => orderWarehouseType = "internal")"
-                                   checked="@(orderWarehouseType == "internal")" />
-                            <label class="form-check-label">
-                                Наш склад
-                            </label>
-                        </div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="radio"
-                                   @onchange="@(() => orderWarehouseType = "external")"
-                                   checked="@(orderWarehouseType == "external")" />
-                            <label class="form-check-label">
-                                Сторонний склад
-                            </label>
-                        </div>
+                        <label class="form-label fw-bold">Выберите склад *</label>
+                        <select @bind="selectedInternalWarehouse" class="form-select">
+                            <option value="">Выберите склад...</option>
+                            @foreach (var wh in organizationWarehouses)
+                            {
+                                <option value="@wh.Id">@wh.Name - @wh.City, @wh.Address</option>
+                            }
+                        </select>
                     </div>
 
-                    <!-- Поля в зависимости от выбора -->
-                    @if (orderWarehouseType == "internal")
-                    {
-                        <div class="mb-3">
-                            <label class="form-label">Выберите склад *</label>
-                            <select @bind="selectedInternalWarehouse" class="form-select">
-                                <option value="">Выберите склад...</option>
-                                @foreach (var wh in organizationWarehouses)
-                                {
-                                    <option value="@wh.Id">@wh.Name - @wh.City, @wh.Address</option>
-                                }
-                            </select>
-                        </div>
-                    }
-                    else if (orderWarehouseType == "external")
-                    {
-                        <div class="mb-3">
-                            <label class="form-label">Адрес стороннего склада *</label>
-                            <input @bind="externalWarehouseAddress" class="form-control"
-                                   placeholder="Введите полный адрес склада" />
-                        </div>
-                    }
-
-                    <!-- Поля для товаров -->
+                    <!-- Поля для товаров с прокруткой -->
                     <div class="mb-3">
                         <label class="form-label fw-bold">Товары в заказе</label>
+                        <div style="max-height: 300px; overflow-y: auto; border: 1px solid #dee2e6; border-radius: 0.375rem; padding: 1rem;">
 
-                        @for (int i = 0; i < orderItems.Count; i++)
-                        {
-                            var index = i;
-                            <div class="card mb-2">
-                                <div class="card-body">
-                                    <div class="row">
-                                        <div class="col-md-5">
-                                            <label class="form-label">Название товара *</label>
-                                            <input @bind="orderItems[index].ProductName" class="form-control"
-                                                   placeholder="Введите название товара" />
-                                        </div>
-                                        <div class="col-md-3">
-                                            <label class="form-label">Количество *</label>
-                                            <input type="number" @bind="orderItems[index].Quantity"
-                                                   class="form-control" placeholder="0" min="1" />
-                                        </div>
-                                        <div class="col-md-3">
-                                            <label class="form-label">Цена за единицу</label>
-                                            <input type="number" @bind="orderItems[index].Price"
-                                                   class="form-control" placeholder="0.00" step="0.01" />
-                                        </div>
-                                        <div class="col-md-1">
-                                            <label class="form-label">&nbsp;</label>
-                                            <button class="btn btn-outline-danger w-100"
-                                                    @onclick="@(() => RemoveOrderItem(index))">
-                                                <i class="fas fa-trash"></i>
-                                            </button>
+                            @for (int i = 0; i < orderItems.Count; i++)
+                            {
+                                var index = i;
+                                <div class="card mb-2">
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <div class="col-md-5">
+                                                <label class="form-label">Название товара *</label>
+                                                <input @bind="orderItems[index].ProductName" class="form-control"
+                                                       placeholder="Введите название товара" />
+                                            </div>
+                                            <div class="col-md-3">
+                                                <label class="form-label">Количество *</label>
+                                                <input type="number" @bind="orderItems[index].Quantity"
+                                                       class="form-control" placeholder="0" min="1" />
+                                            </div>
+                                            <div class="col-md-3">
+                                                <label class="form-label">Цена за единицу</label>
+                                                <input type="number" @bind="orderItems[index].Price"
+                                                       class="form-control" placeholder="0.00" step="0.01" />
+                                            </div>
+                                            <div class="col-md-1">
+                                                <label class="form-label">&nbsp;</label>
+                                                <button class="btn btn-outline-danger w-100"
+                                                        @onclick="@(() => RemoveOrderItem(index))"
+                                                        title="Удалить товар">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
-                        }
+                            }
 
-                        <button class="btn btn-outline-primary btn-sm" @onclick="AddOrderItem">
+                            @if (orderItems.Count == 0)
+                            {
+                                <div class="text-center py-3 text-muted">
+                                    <i class="fas fa-box-open fa-2x mb-2"></i>
+                                    <p>Добавьте товары в заказ</p>
+                                </div>
+                            }
+                        </div>
+
+                        <button class="btn btn-outline-primary btn-sm mt-2" @onclick="AddOrderItem">
                             <i class="fas fa-plus me-1"></i>
                             Добавить товар
                         </button>
@@ -401,8 +380,8 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" @onclick="CloseCreateOrderModal">Отмена</button>
-                    <button type="button" class="btn btn-primary" @onclick="CreateOrder">
+                    <button type="button" class="btn btn-secondary btn-responsive" @onclick="CloseCreateOrderModal">Отмена</button>
+                    <button type="button" class="btn btn-primary btn-responsive" @onclick="CreateOrder" disabled="@(!IsOrderValid())">
                         <i class="fas fa-check me-1"></i>
                         Создать заказ
                     </button>
@@ -554,6 +533,15 @@
     {
         orderItems.Add(new OrderItem());
         StateHasChanged();
+    }
+
+    private bool IsOrderValid()
+    {
+        // Проверяем, что выбран склад и есть хотя бы один товар с названием и количеством
+        return !string.IsNullOrEmpty(selectedInternalWarehouse) &&
+               orderItems.Any(item =>
+                   !string.IsNullOrWhiteSpace(item.ProductName) &&
+                   item.Quantity > 0);
     }
 
     private void RemoveOrderItem(int index)

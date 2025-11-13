@@ -1,4 +1,5 @@
-﻿@page "/auth/register"
+﻿@* Register.razor *@
+@page "/auth/register"
 @using StockhubWeb.Models
 @using StockhubWeb.Services
 @using StockhubWeb.Services.AuthService
@@ -9,11 +10,19 @@
 <div class="auth-container">
     <div class="auth-card">
         <div class="auth-header">
-            <h2><i class="fas fa-user-plus me-2"></i>Регистрация</h2>
-            <p class="text-muted">Создайте аккаунт для работы с системой</p>
+            <h2><i class="fas fa-user-plus me-2"></i>Регистрация организатора</h2>
+            <p class="text-muted">Создайте аккаунт для управления организациями</p>
         </div>
 
         <div class="auth-body">
+            <div class="alert alert-info mb-4">
+                <i class="fas fa-info-circle me-2"></i>
+                <strong>Регистрация организатора</strong><br>
+                Только организаторы могут регистрироваться в веб-версии.
+                Сотрудники присоединяются по приглашениям через мобильное приложение.
+            </div>
+
+            <!-- Остальная часть формы регистрации без изменений -->
             <div class="row">
                 <div class="col-md-6">
                     <div class="mb-3">
@@ -37,93 +46,22 @@
                 </div>
             </div>
 
-            <div class="mb-3">
-                <div class="form-check form-switch">
-                    <input class="form-check-input" type="checkbox" @bind="hasNoMiddleName" />
-                    <label class="form-check-label">Нет отчества</label>
-                </div>
-            </div>
-
-            @if (!hasNoMiddleName)
-            {
-                <div class="mb-3">
-                    <label class="form-label">Отчество</label>
-                    <input @bind="registerModel.MiddleName" class="form-control" placeholder="Введите отчество" />
-                </div>
-            }
-
-            <div class="mb-3">
-                <label class="form-label">Email *</label>
-                <input type="email" @bind="registerModel.Email" class="form-control" placeholder="Введите email" />
-                @if (HasValidationError("Email"))
-                {
-                    <div class="text-danger small">@GetValidationError("Email")</div>
-                }
-            </div>
-
-            <div class="mb-3">
-                <label class="form-label">Пароль *</label>
-                <input type="password" @bind="registerModel.Password" class="form-control"
-                       placeholder="Введите пароль" @oninput="OnPasswordInput" />
-                @if (HasValidationError("Password"))
-                {
-                    <div class="text-danger small">@GetValidationError("Password")</div>
-                }
-                <div class="password-strength mt-2">
-                    <small class="text-muted">Надежность пароля:</small>
-                    <div class="progress mt-1" style="height: 5px;">
-                        <div class="progress-bar @GetPasswordStrengthClass()"
-                             style="width: @(passwordStrength * 25)%;"></div>
-                    </div>
-                    <small class="text-muted">@GetPasswordStrengthText()</small>
-                </div>
-            </div>
-
-            <div class="mb-3">
-                <label class="form-label">Подтверждение пароля *</label>
-                <input type="password" @bind="registerModel.ConfirmPassword" class="form-control" placeholder="Подтвердите пароль" />
-                @if (HasValidationError("ConfirmPassword"))
-                {
-                    <div class="text-danger small">@GetValidationError("ConfirmPassword")</div>
-                }
-            </div>
-
-            <!-- Тумблер организатора -->
-            <div class="mb-3">
-                <div class="form-check form-switch">
-                    <input class="form-check-input" type="checkbox" @bind="isOrganizer" />
-                    <label class="form-check-label">
-                        <strong>Стать организатором</strong>
-                    </label>
-                </div>
-                <small class="form-text text-muted">
-                    Организаторы могут создавать организации, управлять складами и приглашать сотрудников
-                </small>
-            </div>
-
             @if (isLoading)
             {
                 <button class="btn btn-primary w-100 mb-3" disabled="disabled">
                     <span class="spinner-border spinner-border-sm me-2"></span>
-                    Регистрация...
+                    Регистрация организатора...
                 </button>
             }
             else
             {
                 <button class="btn btn-primary w-100 mb-3" @onclick="PerformRegistration">
-                    @if (isOrganizer)
-                    {
-                        <text>Зарегистрироваться как организатор</text>
-                    }
-                    else
-                    {
-                        <text>Зарегистрироваться</text>
-                    }
+                    Зарегистрироваться как организатор
                 </button>
             }
 
             <div class="text-center">
-                <span class="text-muted">Уже есть аккаунт? </span>
+                <span class="text-muted">Уже есть аккаунт организатора? </span>
                 <a href="/auth/login" class="btn btn-link p-0">
                     Войти в систему
                 </a>
@@ -155,6 +93,22 @@
         <button type="button" class="btn-close" @onclick="DismissError"></button>
     </div>
 }
+@if (showSuccess)
+{
+    <div class="alert alert-success alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3" role="alert">
+        <strong>Успех!</strong> @successMessage
+        <button type="button" class="btn-close" @onclick="DismissSuccess"></button>
+    </div>
+}
+
+@if (showError)
+{
+    <div class="alert alert-danger alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3" role="alert">
+        <strong>Ошибка!</strong> @errorMessage
+        <button type="button" class="btn-close" @onclick="DismissError"></button>
+    </div>
+}
+
 
 @code {
     private RegisterModel registerModel = new();
@@ -164,9 +118,7 @@
     private string errorMessage = string.Empty;
     private string successMessage = string.Empty;
     private bool hasNoMiddleName = false;
-    private bool isOrganizer = false;
     private Dictionary<string, string> validationErrors = new();
-    private int passwordStrength = 0;
 
     protected override void OnInitialized()
     {
@@ -199,8 +151,8 @@
         showError = false;
         showSuccess = false;
 
-        // Устанавливаем роль на основе тумблера
-        registerModel.Role = isOrganizer ? UserRole.Organizer : UserRole.Employee;
+        // Все регистрирующиеся становятся организаторами
+        registerModel.Role = UserRole.Organizer;
         registerModel.HasMiddleName = !hasNoMiddleName;
 
         if (hasNoMiddleName)
@@ -208,29 +160,28 @@
             registerModel.MiddleName = null;
         }
 
-        var result = await AuthService.RegisterUserAsync(registerModel);
-
-        if (result)
+        try
         {
-            if (isOrganizer)
+            var result = await AuthService.RegisterUserAsync(registerModel);
+
+            if (result)
             {
-                // Редирект на создание организации для организаторов
+                successMessage = "Вы успешно зарегистрировались как организатор!";
+                showSuccess = true;
+
+                // Редирект на создание организации
+                await Task.Delay(2000);
                 Navigation.NavigateTo("/dashboard/organization/create");
             }
             else
             {
-                // Сообщение об успехе для сотрудников
-                successMessage = "Вы успешно зарегистрировались! Ожидайте приглашения в организацию.";
-                showSuccess = true;
-
-                // Автоматический редирект на главную через 3 секунды
-                await Task.Delay(3000);
-                Navigation.NavigateTo("/");
+                errorMessage = "Не удалось зарегистрироваться. Возможно, пользователь с таким email уже существует.";
+                showError = true;
             }
         }
-        else
+        catch (Exception ex)
         {
-            errorMessage = "Пользователь с таким email уже существует";
+            errorMessage = $"Ошибка регистрации: {ex.Message}";
             showError = true;
         }
 
@@ -272,18 +223,10 @@
             validationErrors["Email"] = "Введите корректный email адрес";
         }
 
-        // Проверка пароля
+        // Проверка пароля (только базовые проверки)
         if (string.IsNullOrWhiteSpace(registerModel.Password))
         {
             validationErrors["Password"] = "Введите пароль";
-        }
-        else
-        {
-            var passwordValidation = ValidatePassword(registerModel.Password);
-            if (!passwordValidation.IsValid)
-            {
-                validationErrors["Password"] = passwordValidation.ErrorMessage;
-            }
         }
 
         // Проверка подтверждения пароля
@@ -312,78 +255,6 @@
         }
     }
 
-    private (bool IsValid, string ErrorMessage) ValidatePassword(string password)
-    {
-        if (password.Length < 8)
-            return (false, "Пароль должен содержать минимум 8 символов");
-
-        if (!password.Any(char.IsDigit))
-            return (false, "Пароль должен содержать хотя бы одну цифру");
-
-        if (!password.Any(char.IsLetter))
-            return (false, "Пароль должен содержать хотя бы одну букву");
-
-        if (!password.Any(ch => !char.IsLetterOrDigit(ch)))
-            return (false, "Пароль должен содержать хотя бы один специальный символ");
-
-        return (true, string.Empty);
-    }
-
-    private async Task EvaluatePasswordStrength()
-    {
-        if (string.IsNullOrEmpty(registerModel.Password))
-        {
-            passwordStrength = 0;
-            return;
-        }
-
-        var strength = 0;
-
-        // Длина пароля
-        if (registerModel.Password.Length >= 8) strength++;
-        if (registerModel.Password.Length >= 12) strength++;
-
-        // Наличие цифр
-        if (registerModel.Password.Any(char.IsDigit)) strength++;
-
-        // Наличие букв в разных регистрах
-        if (registerModel.Password.Any(char.IsLower) && registerModel.Password.Any(char.IsUpper)) strength++;
-
-        // Наличие специальных символов
-        if (registerModel.Password.Any(ch => !char.IsLetterOrDigit(ch))) strength++;
-
-        // Ограничиваем максимальную силу
-        passwordStrength = Math.Min(strength, 4);
-
-        StateHasChanged();
-    }
-
-    private string GetPasswordStrengthClass()
-    {
-        return passwordStrength switch
-        {
-            0 => "bg-danger",
-            1 => "bg-danger",
-            2 => "bg-warning",
-            3 => "bg-info",
-            4 => "bg-success",
-            _ => "bg-danger"
-        };
-    }
-
-    private string GetPasswordStrengthText()
-    {
-        return passwordStrength switch
-        {
-            0 => "Очень слабый",
-            1 => "Слабый",
-            2 => "Средний",
-            3 => "Хороший",
-            4 => "Отличный",
-            _ => "Очень слабый"
-        };
-    }
-
     private void GoBack()
     {
         Navigation.NavigateTo("/");
@@ -397,13 +268,6 @@
     private void DismissSuccess()
     {
         showSuccess = false;
-    }
-
-    // Обработчик изменения пароля
-    private async Task OnPasswordInput(ChangeEventArgs e)
-    {
-        registerModel.Password = e.Value?.ToString() ?? string.Empty;
-        await EvaluatePasswordStrength();
     }
 
     // Безопасные методы для проверки ошибок валидации
