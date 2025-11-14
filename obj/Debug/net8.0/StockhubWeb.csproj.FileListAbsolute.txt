@@ -54,8 +54,6 @@ E:\VisualStudio\Project\StockhubWeb\StockhubWeb\bin\Debug\net8.0\LatoFont\Lato-T
 E:\VisualStudio\Project\StockhubWeb\StockhubWeb\bin\Debug\net8.0\LatoFont\Lato-ThinItalic.ttf
 E:\VisualStudio\Project\StockhubWeb\StockhubWeb\bin\Debug\net8.0\LatoFont\OFL.txt
 E:\VisualStudio\Project\StockhubWeb\StockhubWeb\bin\Debug\net8.0\StockhubWeb.exe
-E:\VisualStudio\Project\StockhubWeb\StockhubWeb\bin\Debug\net8.0\Templates\InvoiceTemplate.docx
-E:\VisualStudio\Project\StockhubWeb\StockhubWeb\bin\Debug\net8.0\Templates\ProductsTableTemplate.docx
 E:\VisualStudio\Project\StockhubWeb\StockhubWeb\bin\Debug\net8.0\StockhubWeb.deps.json
 E:\VisualStudio\Project\StockhubWeb\StockhubWeb\bin\Debug\net8.0\StockhubWeb.runtimeconfig.json
 E:\VisualStudio\Project\StockhubWeb\StockhubWeb\bin\Debug\net8.0\StockhubWeb.dll

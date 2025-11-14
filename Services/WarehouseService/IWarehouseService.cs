@@ -10,8 +10,8 @@ namespace StockhubWeb.Services.WarehouseService
         Task<bool> UpdateWarehouseAsync(Warehouse warehouse);
         Task<List<Product>> GetWarehouseProductsAsync(string warehouseId);
         Task<bool> AddProductAsync(Product product);
-        Task<List<ProductTransfer>> GetProductTransfersAsync(string? warehouseId = null);
-        Task<bool> CreateTestWarehousesAsync(string organizationId);
+        Task<InvoiceData> CreateInvoiceAsync(string warehouseId, List<Product> products, string invoiceNumber);
+        Task<InvoiceData> CreateTransferInvoiceAsync(string fromWarehouseId, string toWarehouseId, Product product, int quantity, string notes);
     }
 
     public class ProductTransfer
