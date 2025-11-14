@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("StockhubWeb")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+8d55c9d69763987582c1cb42ba940441db058828")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+b1111e787a33a12248e44c8e5f65a8fadbbb6eae")]
 [assembly: System.Reflection.AssemblyProductAttribute("StockhubWeb")]
 [assembly: System.Reflection.AssemblyTitleAttribute("StockhubWeb")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
