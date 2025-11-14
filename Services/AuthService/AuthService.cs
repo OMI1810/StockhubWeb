@@ -33,7 +33,7 @@ namespace StockhubWeb.Services.AuthService
             _users.Add(organizer);
 
             // Создаем организацию для тестового организатора
-            _organizationService.CreateOrganizationAsync("Тестовая организация", "default123", organizer.Id);
+            _organizationService.CreateOrganizationAsync("Тестовая организация", organizer.Id);
         }
 
         private void CreateTestEmployee()

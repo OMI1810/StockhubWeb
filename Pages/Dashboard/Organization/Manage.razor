@@ -258,19 +258,6 @@
                         <label class="form-label">Название организации *</label>
                         <input @bind="newOrganizationName" class="form-control" placeholder="Введите название организации" />
                     </div>
-
-                    <div class="mb-3">
-                        <label class="form-label">Пароль организации *</label>
-                        <input type="password" @bind="newOrganizationPassword" class="form-control" placeholder="Придумайте пароль для организации" />
-                        <small class="form-text text-muted">
-                            Этот пароль понадобится сотрудникам для присоединения к вашей организации
-                        </small>
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label">Подтверждение пароля *</label>
-                        <input type="password" @bind="newOrganizationConfirmPassword" class="form-control" placeholder="Подтвердите пароль организации" />
-                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" @onclick="CloseCreateOrganizationModal">Отмена</button>
@@ -571,7 +558,7 @@
     <div class="modal-backdrop show"></div>
 }
 
-<!-- Модальное окно приглашения сотрудника (обновленное) -->
+<!-- Модальное окно приглашения сотрудника -->
 @if (showInviteEmployeeModal)
 {
     <div class="modal show d-block" tabindex="-1">
@@ -589,28 +576,7 @@
                         <label class="form-label">Email *</label>
                         <input type="email" @bind="newEmployeeEmail" class="form-control" placeholder="Введите email сотрудника" />
                     </div>
-                    <div class="row">
-                        <div class="col-md-4">
-                            <div class="mb-3">
-                                <label class="form-label">Фамилия *</label>
-                                <input @bind="newEmployeeLastName" class="form-control" placeholder="Фамилия" />
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="mb-3">
-                                <label class="form-label">Имя *</label>
-                                <input @bind="newEmployeeFirstName" class="form-control" placeholder="Имя" />
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="mb-3">
-                                <label class="form-label">Отчество</label>
-                                <input @bind="newEmployeeMiddleName" class="form-control" placeholder="Отчество" />
-                            </div>
-                        </div>
-                    </div>
 
-                    <!-- Новое поле: выбор склада -->
                     <div class="mb-3">
                         <label class="form-label">Прикрепить к складу</label>
                         <select @bind="selectedEmployeeWarehouseId" class="form-select">
@@ -906,8 +872,6 @@
 
     // Данные для форм
     private string newOrganizationName = string.Empty;
-    private string newOrganizationPassword = string.Empty;
-    private string newOrganizationConfirmPassword = string.Empty;
 
     // Данные для форм склада
     private string newWarehouseName = string.Empty;
@@ -920,9 +884,6 @@
 
     // Данные для форм сотрудника
     private string newEmployeeEmail = string.Empty;
-    private string newEmployeeFirstName = string.Empty;
-    private string newEmployeeLastName = string.Empty;
-    private string? newEmployeeMiddleName = string.Empty;
     private string selectedEmployeeWarehouseId = string.Empty;
 
     // Данные для форм заказа
@@ -1125,8 +1086,6 @@
     {
         showCreateOrganizationModal = true;
         newOrganizationName = string.Empty;
-        newOrganizationPassword = string.Empty;
-        newOrganizationConfirmPassword = string.Empty;
     }
 
     private void CloseCreateOrganizationModal()
@@ -1136,9 +1095,7 @@
 
     private async Task CreateOrganization()
     {
-        if (string.IsNullOrWhiteSpace(newOrganizationName) ||
-            string.IsNullOrWhiteSpace(newOrganizationPassword) ||
-            newOrganizationPassword != newOrganizationConfirmPassword)
+        if (string.IsNullOrWhiteSpace(newOrganizationName))
             return;
 
         var user = await AuthService.GetCurrentUserAsync();
@@ -1146,7 +1103,6 @@
         {
             var result = await OrganizationService.CreateOrganizationAsync(
                 newOrganizationName,
-                newOrganizationPassword,
                 user.Id
             );
 
@@ -1157,8 +1113,6 @@
 
                 // Очищаем поля формы
                 newOrganizationName = string.Empty;
-                newOrganizationPassword = string.Empty;
-                newOrganizationConfirmPassword = string.Empty;
 
                 StateHasChanged();
             }
@@ -1222,9 +1176,6 @@
     {
         showInviteEmployeeModal = true;
         newEmployeeEmail = string.Empty;
-        newEmployeeFirstName = string.Empty;
-        newEmployeeLastName = string.Empty;
-        newEmployeeMiddleName = string.Empty;
         selectedEmployeeWarehouseId = string.Empty;
     }
 
@@ -1235,18 +1186,12 @@
 
     private async Task InviteEmployee()
     {
-        if (string.IsNullOrWhiteSpace(newEmployeeEmail) ||
-            string.IsNullOrWhiteSpace(newEmployeeFirstName) ||
-            string.IsNullOrWhiteSpace(newEmployeeLastName) ||
-            currentOrganization == null)
+        if (currentOrganization == null)
             return;
 
         var inviteModel = new InviteEmployeeModel
         {
             Email = newEmployeeEmail,
-            FirstName = newEmployeeFirstName,
-            LastName = newEmployeeLastName,
-            MiddleName = newEmployeeMiddleName,
             OrganizationId = currentOrganization.Id
         };
 

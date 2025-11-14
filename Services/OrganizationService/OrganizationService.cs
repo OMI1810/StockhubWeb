@@ -20,7 +20,6 @@ namespace StockhubWeb.Services.OrganizationService
             {
                 Id = "test-org-id",
                 Name = "Тестовая организация",
-                OrganizationPassword = "default123",
                 OwnerId = "test-organizer-id",
                 CreatedAt = DateTime.Now.AddDays(-30)
             };
@@ -53,7 +52,7 @@ namespace StockhubWeb.Services.OrganizationService
             return member != null ? _organizations.FirstOrDefault(o => o.Id == member.OrganizationId) : null;
         }
 
-        public async Task<bool> CreateOrganizationAsync(string name, string password, string ownerId)
+        public async Task<bool> CreateOrganizationAsync(string name, string ownerId)
         {
             await Task.Delay(500);
 
@@ -74,7 +73,6 @@ namespace StockhubWeb.Services.OrganizationService
             {
                 Id = Guid.NewGuid().ToString(),
                 Name = name,
-                OrganizationPassword = password,
                 OwnerId = ownerId,
                 CreatedAt = DateTime.Now
             };
@@ -119,12 +117,12 @@ namespace StockhubWeb.Services.OrganizationService
             return false;
         }
 
-        public async Task<bool> JoinOrganizationAsync(string organizationId, string password, string userId)
+        public async Task<bool> JoinOrganizationAsync(string organizationId, string userId)
         {
             await Task.Delay(500);
 
             var organization = _organizations.FirstOrDefault(o =>
-                o.Id == organizationId && o.OrganizationPassword == password);
+                o.Id == organizationId);
 
             if (organization != null)
             {
@@ -221,7 +219,6 @@ namespace StockhubWeb.Services.OrganizationService
             if (existingOrganization != null)
             {
                 existingOrganization.Name = organization.Name;
-                existingOrganization.OrganizationPassword = organization.OrganizationPassword;
                 return true;
             }
             return false;

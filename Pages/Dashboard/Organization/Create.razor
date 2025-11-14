@@ -34,21 +34,6 @@
                                placeholder="Введите название вашей организации" />
                     </div>
 
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">Пароль организации *</label>
-                        <input type="password" @bind="organizationPassword" class="form-control"
-                               placeholder="Придумайте пароль для организации" />
-                        <small class="form-text text-muted">
-                            Этот пароль понадобится сотрудникам для присоединения к вашей организации
-                        </small>
-                    </div>
-
-                    <div class="mb-4">
-                        <label class="form-label fw-bold">Подтверждение пароля *</label>
-                        <input type="password" @bind="confirmPassword" class="form-control"
-                               placeholder="Подтвердите пароль организации" />
-                    </div>
-
                     <button class="btn btn-success w-100 py-2 fw-bold" @onclick="CreateOrganization" disabled="@isLoading">
                         @if (isLoading)
                         {
@@ -86,9 +71,6 @@
 
     private async Task CreateOrganization()
     {
-        if (!ValidateForm())
-            return;
-
         isLoading = true;
 
         var user = await AuthService.GetCurrentUserAsync();
@@ -96,7 +78,6 @@
         {
             var result = await OrganizationService.CreateOrganizationAsync(
                 organizationName,
-                organizationPassword,
                 user.Id
             );
 
@@ -108,12 +89,5 @@
 
         isLoading = false;
         StateHasChanged();
-    }
-
-    private bool ValidateForm()
-    {
-        return !string.IsNullOrWhiteSpace(organizationName) &&
-               !string.IsNullOrWhiteSpace(organizationPassword) &&
-               organizationPassword == confirmPassword;
     }
 }
