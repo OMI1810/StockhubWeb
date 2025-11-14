@@ -1,7 +1,6 @@
 using StockhubWeb.Services.AuthService;
 using StockhubWeb.Services.OrganizationService;
 using StockhubWeb.Services.WarehouseService;
-using StockhubWeb.Services.InvoiceService;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,8 +12,6 @@ builder.Services.AddServerSideBlazor();
 builder.Services.AddScoped<IOrganizationService, OrganizationService>();
 builder.Services.AddScoped<IWarehouseService, WarehouseService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
-builder.Services.AddScoped<IInvoiceService, InvoiceService>();
-
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

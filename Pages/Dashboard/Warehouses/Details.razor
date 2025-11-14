@@ -3,10 +3,8 @@
 @using StockhubWeb.Models
 @using StockhubWeb.Services.AuthService
 @using StockhubWeb.Services.WarehouseService
-@using StockhubWeb.Services.InvoiceService
 @inject IAuthService AuthService
 @inject IWarehouseService WarehouseService
-@inject IInvoiceService InvoiceService
 @inject NavigationManager Navigation
 @inject IJSRuntime JSRuntime
 
@@ -60,7 +58,7 @@
 
         <div class="header-actions-vertical flex-shrink-0">
             <div class="btn-vertical-group">
-                <button class="btn btn-info btn-responsive" @onclick="ShowInvoicePdf">
+                <button class="btn btn-info btn-responsive">
                     <i class="fas fa-file-alt me-2"></i>
                     <span>Документ остатков</span>
                 </button>
@@ -240,58 +238,6 @@
     }
 </div>
 
-<!-- Модальное окно PDF накладной -->
-@if (showInvoiceModal)
-{
-    <div class="modal show d-block pdf-viewer-modal" tabindex="-1" style="background-color: rgba(0,0,0,0.8);">
-        <div class="modal-dialog modal-fullscreen">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title text-adaptive-md">
-                        <i class="fas fa-file-pdf me-2"></i>
-                        Остатки склада - @warehouse?.Name
-                    </h5>
-                    <button type="button" class="btn-close" @onclick="CloseInvoiceModal"></button>
-                </div>
-                <div class="modal-body">
-                    @if (isLoadingInvoice)
-                    {
-                        <div class="pdf-loading">
-                            <div class="spinner-border text-primary" role="status">
-                                <span class="visually-hidden">Загрузка...</span>
-                            </div>
-                            <p class="text-adaptive-md">Генерация PDF накладной...</p>
-                        </div>
-                    }
-                    else if (showError)
-                    {
-                        <div class="pdf-error">
-                            <i class="fas fa-exclamation-triangle"></i>
-                            <h5 class="text-adaptive-lg">Ошибка загрузки накладной</h5>
-                            <p class="text-adaptive-md">@errorMessage</p>
-                            <button class="btn btn-primary mt-2 btn-responsive" @onclick="CloseInvoiceModal">
-                                Закрыть
-                            </button>
-                        </div>
-                    }
-                    else if (!string.IsNullOrEmpty(pdfBase64))
-                    {
-                        <iframe src="data:application/pdf;base64,@pdfBase64"
-                                style="width: 100%; height: 100%;"
-                                frameborder="0">
-                            Ваш браузер не поддерживает отображение PDF.
-                            <a href="data:application/pdf;base64,@pdfBase64" download="накладная.pdf">
-                                Скачайте файл
-                            </a>
-                        </iframe>
-                    }
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="modal-backdrop show"></div>
-}
-
 <!-- Модальное окно создания заказа -->
 @if (showCreateOrderModal)
 {
@@ -401,16 +347,8 @@
     private List<ProductTransfer> transfers = new();
     private string activeTab = "products";
 
-    // Для накладной
-    private bool showInvoiceModal = false;
-    private bool isLoadingInvoice = false;
-    private bool showError = false;
-    private string errorMessage = string.Empty;
-    private string pdfBase64 = string.Empty;
-
     // Для модального окна заказа
     private bool showCreateOrderModal = false;
-    private string orderWarehouseType = "internal";
     private string selectedInternalWarehouse = string.Empty;
     private string externalWarehouseAddress = string.Empty;
     private string orderNotes = string.Empty;
@@ -473,43 +411,6 @@
     {
         activeTab = tabName;
         StateHasChanged();
-    }
-
-    // Методы для работы с накладной
-    private async Task ShowInvoicePdf()
-    {
-        if (warehouse == null) return;
-
-        showInvoiceModal = true;
-        isLoadingInvoice = true;
-        showError = false;
-        errorMessage = string.Empty;
-        pdfBase64 = string.Empty;
-
-        StateHasChanged();
-
-        try
-        {
-            var pdfBytes = await InvoiceService.GenerateInvoicePdfAsync(warehouse);
-            pdfBase64 = Convert.ToBase64String(pdfBytes);
-        }
-        catch (Exception ex)
-        {
-            showError = true;
-            errorMessage = ex.Message;
-            Console.WriteLine($"Ошибка при генерации PDF накладной: {ex.Message}");
-        }
-
-        isLoadingInvoice = false;
-        StateHasChanged();
-    }
-
-    private void CloseInvoiceModal()
-    {
-        showInvoiceModal = false;
-        pdfBase64 = string.Empty;
-        showError = false;
-        errorMessage = string.Empty;
     }
 
     // Методы для модального окна заказа
