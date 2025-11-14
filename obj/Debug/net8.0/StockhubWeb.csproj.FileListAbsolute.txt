@@ -89,7 +89,6 @@ E:\VisualStudio\Project\StockhubWeb\StockhubWeb\obj\Debug\net8.0\staticwebassets
 E:\VisualStudio\Project\StockhubWeb\StockhubWeb\obj\Debug\net8.0\staticwebassets.build.json.cache
 E:\VisualStudio\Project\StockhubWeb\StockhubWeb\obj\Debug\net8.0\staticwebassets.development.json
 E:\VisualStudio\Project\StockhubWeb\StockhubWeb\obj\Debug\net8.0\staticwebassets.build.endpoints.json
-E:\VisualStudio\Project\StockhubWeb\StockhubWeb\obj\Debug\net8.0\staticwebassets.upToDateCheck.txt
 E:\VisualStudio\Project\StockhubWeb\StockhubWeb\obj\Debug\net8.0\Stockhub.EF1501FC.Up2Date
 E:\VisualStudio\Project\StockhubWeb\StockhubWeb\obj\Debug\net8.0\StockhubWeb.dll
 E:\VisualStudio\Project\StockhubWeb\StockhubWeb\obj\Debug\net8.0\refint\StockhubWeb.dll

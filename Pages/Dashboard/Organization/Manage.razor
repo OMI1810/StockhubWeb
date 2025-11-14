@@ -99,18 +99,10 @@
         <div class="card">
             <div class="card-header bg-light d-flex justify-content-between align-items-center">
                 <h5 class="mb-0 text-md-adaptive">Склады организации</h5>
-                <div class="d-flex align-items-center">
-                    <span class="badge bg-secondary badge-nowrap text-sm-adaptive me-3">@currentWarehouses.Count</span>
-                    <div class="input-group input-group-sm" style="width: 250px;">
-                        <input type="text" @bind="warehouseSearch" @oninput="OnWarehouseSearch" class="form-control" placeholder="Поиск складов..." />
-                        <span class="input-group-text">
-                            <i class="fas fa-search"></i>
-                        </span>
-                    </div>
-                </div>
+                <span class="badge bg-secondary badge-nowrap text-sm-adaptive">@currentWarehouses.Count</span>
             </div>
             <div class="card-body">
-                @if (filteredWarehouses.Count == 0)
+                @if (currentWarehouses.Count == 0)
                 {
                     <div class="text-center py-5">
                         <i class="fas fa-warehouse fa-3x text-muted mb-3"></i>
@@ -123,9 +115,9 @@
                 else
                 {
                     <div class="row">
-                        @foreach (var warehouse in filteredWarehouses)
+                        @foreach (var warehouse in currentWarehouses)
                         {
-                            <div class="col-xxl-3 col-xl-4 col-lg-6 col-md-6 mb-4">
+                            <div class="col-md-6 col-lg-4 mb-4">
                                 <div class="card h-100 warehouse-card @(warehouse.IsActive ? "" : "border-warning")">
                                     <div class="card-body">
                                         <div class="d-flex justify-content-between align-items-start mb-2">
@@ -137,14 +129,9 @@
                                             </span>
                                         </div>
                                         <p class="card-text text-muted small card-text-truncate text-sm-adaptive" title="@warehouse.City, @warehouse.Address">
-                                            <i class="fas fa-map-marker-alt me-1"></i>
                                             <strong>@warehouse.City, @warehouse.Address</strong><br>
-                                            <i class="fas fa-boxes me-1"></i>
                                             Товаров: <strong>@warehouse.Products.Count</strong><br>
-                                            <i class="fas fa-calendar me-1"></i>
-                                            Создан: <strong>@warehouse.CreatedAt.ToString("dd.MM.yyyy")</strong><br>
-                                            <i class="fas fa-ruble-sign me-1"></i>
-                                            Стоимость: <strong>@warehouse.Products.Sum(p => p.Price * p.Quantity).ToString("C")</strong>
+                                            Создан: <strong>@warehouse.CreatedAt.ToString("dd.MM.yyyy")</strong>
                                         </p>
                                     </div>
                                     <div class="card-footer bg-transparent">
@@ -153,11 +140,6 @@
                                                     @onclick="@(() => ShowWarehouseProducts(warehouse))">
                                                 <i class="fas fa-boxes me-1"></i>
                                                 Просмотр остатков
-                                            </button>
-                                            <button class="btn btn-outline-secondary btn-sm w-100 text-xs"
-                                                    @onclick="@(() => EditWarehouse(warehouse))">
-                                                <i class="fas fa-edit me-1"></i>
-                                                Редактировать
                                             </button>
                                         </div>
                                     </div>
@@ -1002,23 +984,6 @@
             // Закрываем модальное окно после выбора
             showOrganizationsModal = false;
             StateHasChanged();
-        }
-    }
-
-    private void OnWarehouseSearch()
-    {
-        if (string.IsNullOrWhiteSpace(warehouseSearch))
-        {
-            filteredWarehouses = currentWarehouses;
-        }
-        else
-        {
-            var searchLower = warehouseSearch.ToLower();
-            filteredWarehouses = currentWarehouses
-                .Where(w => w.Name.ToLower().Contains(searchLower) ||
-                           w.City.ToLower().Contains(searchLower) ||
-                           w.Address.ToLower().Contains(searchLower))
-                .ToList();
         }
     }
 
