@@ -1,1 +1,3 @@
 wwwroot\css\site.css
+wwwroot\Templates\InvoiceTemplate.docx
+wwwroot\Templates\ProductsTableTemplate.docx

@@ -11,7 +11,7 @@ namespace StockhubWeb.Services.WarehouseService
         Task<List<Product>> GetWarehouseProductsAsync(string warehouseId);
         Task<bool> AddProductAsync(Product product);
         Task<List<ProductTransfer>> GetProductTransfersAsync(string? warehouseId = null);
-        Task<bool> CreateTestWarehousesAsync(string organizationId);
+        Task<bool> CreateProductTransferAsync(ProductTransfer transfer);
     }
 
     public class ProductTransfer

@@ -47,5 +47,6 @@ namespace StockhubWeb.Models
         public string LastName { get; set; } = string.Empty;
         public string? MiddleName { get; set; }
         public string OrganizationId { get; set; } = string.Empty;
+        public string? WarehouseId { get; set; }
     }
 }

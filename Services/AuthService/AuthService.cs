@@ -114,6 +114,7 @@ namespace StockhubWeb.Services.AuthService
                 MiddleName = request.MiddleName,
                 Role = UserRole.Employee,
                 OrganizationId = request.OrganizationId
+                // Можно добавить поле WarehouseId в модель User если нужно
             };
 
             _users.Add(employee);
@@ -123,6 +124,11 @@ namespace StockhubWeb.Services.AuthService
 
             // В реальном приложении здесь была бы отправка email с паролем
             Console.WriteLine($"Сотрудник {request.Email} приглашен. Пароль: {password}");
+
+            if (!string.IsNullOrEmpty(request.WarehouseId))
+            {
+                Console.WriteLine($"Сотрудник прикреплен к складу: {request.WarehouseId}");
+            }
 
             return true;
         }

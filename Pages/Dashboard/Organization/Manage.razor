@@ -3,14 +3,15 @@
 @using StockhubWeb.Models
 @using StockhubWeb.Services
 @using StockhubWeb.Services.AuthService
-@using StockhubWeb.Services.InvoiceService
 @using StockhubWeb.Services.OrganizationService
+@using StockhubWeb.Services.WarehouseService
 @inject IAuthService AuthService
 @inject IOrganizationService OrganizationService
 @inject IWarehouseService WarehouseService
 @inject NavigationManager Navigation
 
-<div class="container mt-4">
+<div class="container-fluid mt-3">
+    <!-- Заголовок -->
     <div class="d-flex justify-content-between align-items-center mb-4 header-flex">
         <div class="header-content flex-grow-1 me-3">
             <h3 class="mb-1 main-title adaptive-org-name">
@@ -40,7 +41,6 @@
                 <span class="d-none d-md-inline">Организации</span>
                 <span class="d-md-none">Орг.</span>
             </button>
-            <span class="badge bg-primary">Организатор</span>
         </div>
     </div>
 
@@ -50,26 +50,45 @@
         <div class="card mb-4">
             <div class="card-header bg-light d-flex justify-content-between align-items-center">
                 <h5 class="mb-0 text-md-adaptive">Панель управления организацией</h5>
-                <span class="badge bg-secondary badge-nowrap text-sm-adaptive">@currentWarehouses.Count складов</span>
+                <span class="badge bg-primary badge-nowrap text-sm-adaptive" style="font-size: 1rem; padding: 0.5rem 1rem;">Организатор</span>
             </div>
             <div class="card-body">
                 <div class="row">
-                    <div class="col-md-4 mb-3">
-                        <button class="btn btn-primary w-100 text-sm-adaptive" @onclick="ShowCreateWarehouseModal">
-                            <i class="fas fa-warehouse me-2"></i>
+                    <div class="col-xxl-2 col-xl-3 col-lg-4 col-md-6 mb-3">
+                        <button class="btn btn-primary w-100 text-sm-adaptive py-3" @onclick="ShowCreateWarehouseModal" style="font-size: 1rem;">
+                            <i class="fas fa-warehouse me-2 fa-lg"></i>
                             Добавить склад
                         </button>
                     </div>
-                    <div class="col-md-4 mb-3">
-                        <button class="btn btn-success w-100 text-sm-adaptive" @onclick="ShowInviteEmployeeModal">
-                            <i class="fas fa-user-plus me-2"></i>
+                    <div class="col-xxl-2 col-xl-3 col-lg-4 col-md-6 mb-3">
+                        <button class="btn btn-success w-100 text-sm-adaptive py-3" @onclick="ShowInviteEmployeeModal" style="font-size: 1rem;">
+                            <i class="fas fa-user-plus me-2 fa-lg"></i>
                             Добавить сотрудника
                         </button>
                     </div>
-                    <div class="col-md-4 mb-3">
-                        <button class="btn btn-info w-100 text-sm-adaptive" @onclick="ShowOrganizationInfoModal">
-                            <i class="fas fa-info-circle me-2"></i>
-                            Информация об организации
+                    <div class="col-xxl-2 col-xl-3 col-lg-4 col-md-6 mb-3">
+                        <button class="btn btn-info w-100 text-sm-adaptive py-3" @onclick="ShowOrganizationInfoModal" style="font-size: 1rem;">
+                            <i class="fas fa-info-circle me-2 fa-lg"></i>
+                            Информация
+                        </button>
+                    </div>
+                    <div class="col-xxl-2 col-xl-3 col-lg-4 col-md-6 mb-3">
+                        <button class="btn btn-warning w-100 text-sm-adaptive py-3" @onclick="ShowCreateOrderModal" style="font-size: 1rem;">
+                            <i class="fas fa-exchange-alt me-2 fa-lg"></i>
+                            Перемещение
+                        </button>
+                    </div>
+                    <!-- Новые кнопки -->
+                    <div class="col-xxl-2 col-xl-3 col-lg-4 col-md-6 mb-3">
+                        <button class="btn btn-secondary w-100 text-sm-adaptive py-3" @onclick="ShowNomenclatureModal" style="font-size: 1rem;">
+                            <i class="fas fa-list me-2 fa-lg"></i>
+                            Номенклатура
+                        </button>
+                    </div>
+                    <div class="col-xxl-2 col-xl-3 col-lg-4 col-md-6 mb-3">
+                        <button class="btn btn-dark w-100 text-sm-adaptive py-3" @onclick="ShowInvoicesModal" style="font-size: 1rem;">
+                            <i class="fas fa-file-invoice me-2 fa-lg"></i>
+                            Накладные
                         </button>
                     </div>
                 </div>
@@ -80,10 +99,18 @@
         <div class="card">
             <div class="card-header bg-light d-flex justify-content-between align-items-center">
                 <h5 class="mb-0 text-md-adaptive">Склады организации</h5>
-                <span class="badge bg-secondary badge-nowrap text-sm-adaptive">@currentWarehouses.Count</span>
+                <div class="d-flex align-items-center">
+                    <span class="badge bg-secondary badge-nowrap text-sm-adaptive me-3">@currentWarehouses.Count</span>
+                    <div class="input-group input-group-sm" style="width: 250px;">
+                        <input type="text" @bind="warehouseSearch" @oninput="OnWarehouseSearch" class="form-control" placeholder="Поиск складов..." />
+                        <span class="input-group-text">
+                            <i class="fas fa-search"></i>
+                        </span>
+                    </div>
+                </div>
             </div>
             <div class="card-body">
-                @if (currentWarehouses.Count == 0)
+                @if (filteredWarehouses.Count == 0)
                 {
                     <div class="text-center py-5">
                         <i class="fas fa-warehouse fa-3x text-muted mb-3"></i>
@@ -96,9 +123,9 @@
                 else
                 {
                     <div class="row">
-                        @foreach (var warehouse in currentWarehouses)
+                        @foreach (var warehouse in filteredWarehouses)
                         {
-                            <div class="col-md-6 col-lg-4 mb-4">
+                            <div class="col-xxl-3 col-xl-4 col-lg-6 col-md-6 mb-4">
                                 <div class="card h-100 warehouse-card @(warehouse.IsActive ? "" : "border-warning")">
                                     <div class="card-body">
                                         <div class="d-flex justify-content-between align-items-start mb-2">
@@ -110,17 +137,29 @@
                                             </span>
                                         </div>
                                         <p class="card-text text-muted small card-text-truncate text-sm-adaptive" title="@warehouse.City, @warehouse.Address">
+                                            <i class="fas fa-map-marker-alt me-1"></i>
                                             <strong>@warehouse.City, @warehouse.Address</strong><br>
+                                            <i class="fas fa-boxes me-1"></i>
                                             Товаров: <strong>@warehouse.Products.Count</strong><br>
-                                            Создан: <strong>@warehouse.CreatedAt.ToString("dd.MM.yyyy")</strong>
+                                            <i class="fas fa-calendar me-1"></i>
+                                            Создан: <strong>@warehouse.CreatedAt.ToString("dd.MM.yyyy")</strong><br>
+                                            <i class="fas fa-ruble-sign me-1"></i>
+                                            Стоимость: <strong>@warehouse.Products.Sum(p => p.Price * p.Quantity).ToString("C")</strong>
                                         </p>
                                     </div>
                                     <div class="card-footer bg-transparent">
-                                        <button class="btn btn-outline-primary btn-sm w-100 text-xs"
-                                                @onclick="@(() => OpenWarehouse(warehouse.Id))">
-                                            <i class="fas fa-eye me-1"></i>
-                                            Открыть склад
-                                        </button>
+                                        <div class="d-grid gap-2">
+                                            <button class="btn btn-outline-primary btn-sm w-100 text-xs"
+                                                    @onclick="@(() => ShowWarehouseProducts(warehouse))">
+                                                <i class="fas fa-boxes me-1"></i>
+                                                Просмотр остатков
+                                            </button>
+                                            <button class="btn btn-outline-secondary btn-sm w-100 text-xs"
+                                                    @onclick="@(() => EditWarehouse(warehouse))">
+                                                <i class="fas fa-edit me-1"></i>
+                                                Редактировать
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -141,84 +180,6 @@
         </div>
     }
 </div>
-
-<!-- Модальное окно управления организациями -->
-@if (showOrganizationsModal)
-{
-    <div class="modal show d-block" tabindex="-1">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title text-md-adaptive">
-                        <i class="fas fa-building me-2"></i>
-                        Управление организациями
-                    </h5>
-                    <button type="button" class="btn-close" @onclick="CloseOrganizationsModal"></button>
-                </div>
-                <div class="modal-body">
-                    @if (organizations.Count > 0)
-                    {
-                        <div class="mb-4">
-                            <h6 class="text-md-adaptive">Ваши организации:</h6>
-                            <div class="row">
-                                @foreach (var organization in organizations)
-                                {
-                                    <div class="col-md-6 mb-3">
-                                        <div class="card h-100 organization-card @(organization.Id == currentOrganization?.Id ? "border-primary" : "")">
-                                            <div class="card-body">
-                                                <div class="d-flex justify-content-between align-items-start mb-2">
-                                                    <h6 class="card-title card-title-truncate mb-0 me-2 adaptive-card-title" title="@organization.Name">
-                                                        @organization.Name
-                                                    </h6>
-                                                    @if (organization.Id == currentOrganization?.Id)
-                                                    {
-                                                        <span class="badge bg-primary badge-nowrap text-xs">Текущая</span>
-                                                    }
-                                                </div>
-                                                <p class="card-text text-muted small mb-2 card-text-truncate text-sm-adaptive">
-                                                    Создана: <strong>@organization.CreatedAt.ToString("dd.MM.yyyy")</strong><br>
-                                                    Сотрудников: <strong>@GetEmployeeCount(organization.Id)</strong><br>
-                                                    Складов: <strong>@GetWarehouseCount(organization.Id)</strong>
-                                                </p>
-                                            </div>
-                                            <div class="card-footer bg-transparent py-2">
-                                                <div class="d-grid gap-1">
-                                                    <button class="btn @(organization.Id == currentOrganization?.Id ? "btn-primary" : "btn-outline-primary") btn-sm text-xs"
-                                                            @onclick="@(() => SwitchOrganization(organization.Id))">
-                                                        <i class="fas @(organization.Id == currentOrganization?.Id ? "fa-check" : "fa-exchange-alt") me-1"></i>
-                                                        @(organization.Id == currentOrganization?.Id ? "Текущая" : "Выбрать")
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                }
-                            </div>
-                        </div>
-                    }
-                    else
-                    {
-                        <div class="text-center py-4">
-                            <i class="fas fa-building fa-3x text-muted mb-3"></i>
-                            <p class="text-muted text-sm-adaptive">У вас пока нет организаций</p>
-                        </div>
-                    }
-
-                    <div class="border-top pt-3">
-                        <button class="btn btn-success w-100 text-sm-adaptive" @onclick="ShowCreateOrganizationModal">
-                            <i class="fas fa-plus-circle me-2"></i>
-                            Создать новую организацию
-                        </button>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary text-sm-adaptive" @onclick="CloseOrganizationsModal">Закрыть</button>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="modal-backdrop show"></div>
-}
 
 <!-- Модальное окно создания организации -->
 @if (showCreateOrganizationModal)
@@ -262,7 +223,7 @@
     <div class="modal-backdrop show"></div>
 }
 
-<!-- Модальное окно создания склада -->
+@* !-- Модальное окно создания склада --> *@
 @if (showCreateWarehouseModal)
 {
     <div class="modal show d-block" tabindex="-1">
@@ -332,7 +293,226 @@
     <div class="modal-backdrop show"></div>
 }
 
-<!-- Модальное окно приглашения сотрудника -->
+<!-- Модальное окно создания заказа (обновленное) -->
+@if (showCreateOrderModal)
+{
+    <div class="modal show d-block" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-exchange-alt me-2"></i>
+                        Создание заказа (Перемещение товаров)
+                    </h5>
+                    <button type="button" class="btn-close" @onclick="CloseCreateOrderModal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Откуда (Склад-источник) *</label>
+                                <select @bind="fromWarehouseId" class="form-select" onclick="OnFromWarehouseChanged">
+                                    <option value="">Выберите склад-источник</option>
+                                    @foreach (var warehouse in currentWarehouses.Where(w => w.IsActive))
+                                    {
+                                        <option value="@warehouse.Id">@warehouse.Name</option>
+                                    }
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Куда (Склад-назначение) *</label>
+                                <select @bind="toWarehouseId" class="form-select">
+                                    <option value="">Выберите склад-назначение</option>
+                                    @foreach (var warehouse in currentWarehouses.Where(w => w.IsActive && w.Id != fromWarehouseId))
+                                    {
+                                        <option value="@warehouse.Id">@warehouse.Name</option>
+                                    }
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Выбор товара из склада-источника -->
+                    @if (!string.IsNullOrEmpty(fromWarehouseId))
+                    {
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Выберите товар для перемещения *</label>
+                            <select @bind="selectedProductId" class="form-select" @onclick="OnProductSelected">
+                                <option value="">Выберите товар</option>
+                                @foreach (var product in availableProducts)
+                                {
+                                    <option value="@product.Id">@product.Name (Доступно: @product.Quantity)</option>
+                                }
+                            </select>
+                        </div>
+                    }
+
+                    <!-- Информация о выбранном товаре -->
+                    @if (selectedProduct != null)
+                    {
+                        <div class="card bg-light mb-4">
+                            <div class="card-body">
+                                <h6 class="card-title">Информация о товаре</h6>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <p class="mb-1"><strong>Название:</strong> @selectedProduct.Name</p>
+                                        <p class="mb-1"><strong>Категория:</strong> @selectedProduct.Category</p>
+                                        <p class="mb-1"><strong>Описание:</strong> @selectedProduct.Description</p>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <p class="mb-1"><strong>Цена:</strong> @selectedProduct.Price.ToString("C")</p>
+                                        <p class="mb-1"><strong>Доступно:</strong> <span class="badge bg-success">@selectedProduct.Quantity</span></p>
+                                        <p class="mb-1"><strong>На складе:</strong> @fromWarehouse?.Name</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Количество для перемещения -->
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Количество для перемещения *</label>
+                                    <input type="number" @bind="transferQuantity" class="form-control" 
+                                           min="1" max="@selectedProduct.Quantity" 
+                                           placeholder="Введите количество" />
+                                    <small class="form-text text-muted">
+                                        Доступно: @selectedProduct.Quantity единиц
+                                    </small>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Примечание</label>
+                                    <input @bind="transferNotes" class="form-control" placeholder="Введите примечание к перемещению" />
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @onclick="CloseCreateOrderModal">Отмена</button>
+                    <button type="button" class="btn btn-primary" @onclick="CreateTransfer" 
+                            disabled="@(!CanCreateTransfer)">
+                        <i class="fas fa-exchange-alt me-2"></i>
+                        Создать перемещение
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-backdrop show"></div>
+}
+
+<!-- Модальное окно просмотра остатков склада -->
+@if (showWarehouseProductsModal)
+{
+    <div class="modal show d-block" tabindex="-1">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-boxes me-2"></i>
+                        Остатки склада: @selectedWarehouse?.Name
+                    </h5>
+                    <button type="button" class="btn-close" @onclick="CloseWarehouseProductsModal"></button>
+                </div>
+                <div class="modal-body">
+                    @if (selectedWarehouse != null && selectedWarehouse.Products.Count > 0)
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Название</th>
+                                        <th>Категория</th>
+                                        <th>Описание</th>
+                                        <th>Цена</th>
+                                        <th>Количество</th>
+                                        <th>Дата создания</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var product in selectedWarehouse.Products)
+                                    {
+                                        <tr>
+                                            <td>
+                                                <strong>@product.Name</strong>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-info">@product.Category</span>
+                                            </td>
+                                            <td class="text-truncate" style="max-width: 200px;" title="@product.Description">
+                                                @product.Description
+                                            </td>
+                                            <td>
+                                                <strong>@product.Price.ToString("C")</strong>
+                                            </td>
+                                            <td>
+                                                <span class="badge @(product.Quantity > 0 ? "bg-success" : "bg-danger")">
+                                                    @product.Quantity
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <small class="text-muted">@product.CreatedAt.ToString("dd.MM.yyyy")</small>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="row mt-3">
+                            <div class="col-md-4">
+                                <div class="card bg-light">
+                                    <div class="card-body text-center">
+                                        <h6 class="card-title">Всего товаров</h6>
+                                        <h4 class="text-primary">@selectedWarehouse.Products.Count</h4>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card bg-light">
+                                    <div class="card-body text-center">
+                                        <h6 class="card-title">Общая стоимость</h6>
+                                        <h4 class="text-success">@selectedWarehouse.Products.Sum(p => p.Price * p.Quantity).ToString("C")</h4>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card bg-light">
+                                    <div class="card-body text-center">
+                                        <h6 class="card-title">Общее количество</h6>
+                                        <h4 class="text-info">@selectedWarehouse.Products.Sum(p => p.Quantity)</h4>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-5">
+                            <i class="fas fa-box-open fa-3x text-muted mb-3"></i>
+                            <p class="text-muted">На этом складе пока нет товаров</p>
+                            <button class="btn btn-primary" @onclick="ShowCreateOrderModal">
+                                <i class="fas fa-plus me-2"></i>
+                                Добавить первый товар
+                            </button>
+                        </div>
+                    }
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @onclick="CloseWarehouseProductsModal">Закрыть</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-backdrop show"></div>
+}
+
+<!-- Модальное окно приглашения сотрудника (обновленное) -->
 @if (showInviteEmployeeModal)
 {
     <div class="modal show d-block" tabindex="-1">
@@ -370,6 +550,21 @@
                             </div>
                         </div>
                     </div>
+
+                    <!-- Новое поле: выбор склада -->
+                    <div class="mb-3">
+                        <label class="form-label">Прикрепить к складу</label>
+                        <select @bind="selectedEmployeeWarehouseId" class="form-select">
+                            <option value="">Без привязки к складу</option>
+                            @foreach (var warehouse in currentWarehouses.Where(w => w.IsActive))
+                            {
+                                <option value="@warehouse.Id">@warehouse.Name</option>
+                            }
+                        </select>
+                        <small class="form-text text-muted">
+                            Выберите склад, к которому будет прикреплен сотрудник (опционально)
+                        </small>
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" @onclick="CloseInviteEmployeeModal">Отмена</button>
@@ -380,6 +575,7 @@
     </div>
     <div class="modal-backdrop show"></div>
 }
+
 
 <!-- Модальное окно информации об организации -->
 @if (showOrganizationInfoModal)
@@ -461,6 +657,189 @@
     <div class="modal-backdrop show"></div>
 }
 
+<!-- Модальное окно номенклатуры -->
+@if (showNomenclatureModal)
+{
+    <div class="modal show d-block" tabindex="-1">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-list me-2"></i>
+                        Номенклатура товаров
+                    </h5>
+                    <button type="button" class="btn-close" @onclick="CloseNomenclatureModal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div class="input-group" style="max-width: 300px;">
+                            <input type="text" @bind="nomenclatureSearch" @oninput="OnNomenclatureSearch" class="form-control" placeholder="Поиск товаров..." />
+                            <span class="input-group-text">
+                                <i class="fas fa-search"></i>
+                            </span>
+                        </div>
+                        <span class="badge bg-primary">
+                            Всего товаров: @filteredNomenclature.Count
+                        </span>
+                    </div>
+
+                    @if (filteredNomenclature.Count > 0)
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Название</th>
+                                        <th>Категория</th>
+                                        <th>Описание</th>
+                                        <th>Цена</th>
+                                        <th>Общее количество</th>
+                                        <th>Склады</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var item in filteredNomenclature)
+                                    {
+                                        <tr>
+                                            <td>
+                                                <strong>@item.Name</strong>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-info">@item.Category</span>
+                                            </td>
+                                            <td class="text-truncate" style="max-width: 200px;" title="@item.Description">
+                                                @item.Description
+                                            </td>
+                                            <td>
+                                                <strong>@item.Price.ToString("C")</strong>
+                                            </td>
+                                            <td>
+                                                <span class="badge @(item.TotalQuantity > 0 ? "bg-success" : "bg-danger")">
+                                                    @item.TotalQuantity
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <small>
+                                                    @string.Join(", ", item.Warehouses.Take(2))
+                                                    @if (item.Warehouses.Count > 2)
+                                                    {
+                                                        <text> и еще @(item.Warehouses.Count - 2)</text>
+                                                    }
+                                                </small>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-5">
+                            <i class="fas fa-box-open fa-3x text-muted mb-3"></i>
+                            <p class="text-muted">Товары не найдены</p>
+                        </div>
+                    }
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @onclick="CloseNomenclatureModal">Закрыть</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-backdrop show"></div>
+}
+
+<!-- Модальное окно накладных -->
+@if (showInvoicesModal)
+{
+    <div class="modal show d-block" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-file-invoice me-2"></i>
+                        Накладные
+                    </h5>
+                    <button type="button" class="btn-close" @onclick="CloseInvoicesModal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row mb-4">
+                        <div class="col-md-8">
+                            <div class="input-group">
+                                <input type="text" @bind="invoiceSearch" @oninput="OnInvoiceSearch" class="form-control" placeholder="Поиск по накладным..." />
+                                <span class="input-group-text">
+                                    <i class="fas fa-search"></i>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <button class="btn btn-primary w-100" @onclick="CreateNewInvoice">
+                                <i class="fas fa-plus me-2"></i>
+                                Новая накладная
+                            </button>
+                        </div>
+                    </div>
+
+                    @if (filteredInvoices.Count > 0)
+                    {
+                        <div class="list-group">
+                            @foreach (var invoice in filteredInvoices)
+                            {
+                                <div class="list-group-item">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div class="flex-grow-1">
+                                            <h6 class="mb-1">@invoice.Title</h6>
+                                            <p class="mb-1 text-muted small">@invoice.Description</p>
+                                            <div class="d-flex gap-3">
+                                                <small class="text-muted">
+                                                    <i class="fas fa-calendar me-1"></i>
+                                                    @invoice.CreatedDate.ToString("dd.MM.yyyy HH:mm")
+                                                </small>
+                                                <small class="text-muted">
+                                                    <i class="fas fa-boxes me-1"></i>
+                                                    Товаров: @invoice.ItemsCount
+                                                </small>
+                                                <small class="text-muted">
+                                                    <i class="fas fa-ruble-sign me-1"></i>
+                                                    Сумма: @invoice.TotalAmount.ToString("C")
+                                                </small>
+                                            </div>
+                                        </div>
+                                        <div class="d-flex gap-2">
+                                            <span class="badge @GetInvoiceStatusBadge(invoice.Status)">
+                                                @invoice.Status
+                                            </span>
+                                            <button class="btn btn-sm btn-outline-primary" @onclick="() => ViewInvoice(invoice.Id)">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-5">
+                            <i class="fas fa-file-invoice fa-3x text-muted mb-3"></i>
+                            <p class="text-muted">Накладные не найдены</p>
+                            <button class="btn btn-primary" @onclick="CreateNewInvoice">
+                                <i class="fas fa-plus me-2"></i>
+                                Создать первую накладную
+                            </button>
+                        </div>
+                    }
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @onclick="CloseInvoicesModal">Закрыть</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-backdrop show"></div>
+}
+
 @code {
     private List<Organization> organizations = new();
     private Organization? currentOrganization;
@@ -475,6 +854,13 @@
     private bool showCreateWarehouseModal = false;
     private bool showInviteEmployeeModal = false;
     private bool showOrganizationInfoModal = false;
+    private bool showCreateOrderModal = false;
+    private bool showWarehouseProductsModal = false;
+    private bool showNomenclatureModal = false;
+    private bool showInvoicesModal = false;
+
+    private string warehouseSearch = string.Empty;
+    private List<Warehouse> filteredWarehouses = new();
 
     // Данные для форм
     private string newOrganizationName = string.Empty;
@@ -495,6 +881,66 @@
     private string newEmployeeFirstName = string.Empty;
     private string newEmployeeLastName = string.Empty;
     private string? newEmployeeMiddleName = string.Empty;
+    private string selectedEmployeeWarehouseId = string.Empty;
+
+    // Данные для форм заказа
+    private string newProductName = string.Empty;
+    private string newProductDescription = string.Empty;
+    private string newProductCategory = string.Empty;
+    private decimal newProductPrice = 0;
+    private int newProductQuantity = 0;
+    private string selectedWarehouseId = string.Empty;
+    private string fromWarehouseId = string.Empty;
+    private string toWarehouseId = string.Empty;
+    private string selectedProductId = string.Empty;
+    private int transferQuantity = 0;
+    private string transferNotes = string.Empty;
+
+    private List<Product> availableProducts = new();
+    private Product? selectedProduct = null;
+    private Warehouse? fromWarehouse = null;
+
+    private bool CanCreateTransfer =>
+        !string.IsNullOrEmpty(fromWarehouseId) &&
+        !string.IsNullOrEmpty(toWarehouseId) &&
+        !string.IsNullOrEmpty(selectedProductId) &&
+        transferQuantity > 0 &&
+        transferQuantity <= (selectedProduct?.Quantity ?? 0);
+
+    // Данные для номенклатуры
+    private string nomenclatureSearch = string.Empty;
+    private List<NomenclatureItem> allNomenclature = new();
+    private List<NomenclatureItem> filteredNomenclature = new();
+
+    // Данные для накладных
+    private string invoiceSearch = string.Empty;
+    private List<Invoice> allInvoices = new();
+    private List<Invoice> filteredInvoices = new();
+
+    // Данные для просмотра остатков
+    private Warehouse? selectedWarehouse = null;
+
+    public class NomenclatureItem
+    {
+        public string Id { get; set; } = string.Empty;
+        public string Name { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
+        public string Category { get; set; } = string.Empty;
+        public decimal Price { get; set; }
+        public int TotalQuantity { get; set; }
+        public List<string> Warehouses { get; set; } = new();
+    }
+
+    public class Invoice
+    {
+        public string Id { get; set; } = Guid.NewGuid().ToString();
+        public string Title { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
+        public DateTime CreatedDate { get; set; } = DateTime.Now;
+        public int ItemsCount { get; set; }
+        public decimal TotalAmount { get; set; }
+        public string Status { get; set; } = "Черновик";
+    }
 
     protected override async Task OnInitializedAsync()
     {
@@ -557,6 +1003,61 @@
             showOrganizationsModal = false;
             StateHasChanged();
         }
+    }
+
+    private void OnWarehouseSearch()
+    {
+        if (string.IsNullOrWhiteSpace(warehouseSearch))
+        {
+            filteredWarehouses = currentWarehouses;
+        }
+        else
+        {
+            var searchLower = warehouseSearch.ToLower();
+            filteredWarehouses = currentWarehouses
+                .Where(w => w.Name.ToLower().Contains(searchLower) ||
+                           w.City.ToLower().Contains(searchLower) ||
+                           w.Address.ToLower().Contains(searchLower))
+                .ToList();
+        }
+    }
+
+    private decimal GetTotalInventoryValue()
+    {
+        return currentWarehouses.Sum(w => w.Products.Sum(p => p.Price * p.Quantity));
+    }
+
+    // Методы для номенклатуры
+    private void SelectNomenclatureItem(NomenclatureItem item)
+    {
+        // Логика выбора товара из номенклатуры
+        Console.WriteLine($"Выбран товар: {item.Name}");
+    }
+
+    private void ExportNomenclature()
+    {
+        // Логика экспорта номенклатуры
+        Console.WriteLine("Экспорт номенклатуры в Excel");
+    }
+
+    // Методы для накладных
+    private void FilterInvoicesByStatus(string status)
+    {
+        if (status == "Все")
+        {
+            filteredInvoices = allInvoices;
+        }
+        else
+        {
+            filteredInvoices = allInvoices.Where(i => i.Status == status).ToList();
+        }
+        StateHasChanged();
+    }
+    
+    private void EditWarehouse(Warehouse warehouse)
+    {
+        // Логика редактирования склада
+        Console.WriteLine($"Редактирование склада: {warehouse.Name}");
     }
 
     private int GetEmployeeCount(string organizationId)
@@ -698,6 +1199,7 @@
         newEmployeeFirstName = string.Empty;
         newEmployeeLastName = string.Empty;
         newEmployeeMiddleName = string.Empty;
+        selectedEmployeeWarehouseId = string.Empty;
     }
 
     private void CloseInviteEmployeeModal()
@@ -733,6 +1235,167 @@
         }
     }
 
+    // Для создания заказа
+    private void ShowCreateOrderModal()
+    {
+        showCreateOrderModal = true;
+        fromWarehouseId = string.Empty;
+        toWarehouseId = string.Empty;
+        selectedProductId = string.Empty;
+        transferQuantity = 0;
+        transferNotes = string.Empty;
+        availableProducts = new();
+        selectedProduct = null;
+        fromWarehouse = null;
+    }
+
+    private async Task OnFromWarehouseChanged()
+    {
+        if (!string.IsNullOrEmpty(fromWarehouseId))
+        {
+            fromWarehouse = currentWarehouses.FirstOrDefault(w => w.Id == fromWarehouseId);
+            if (fromWarehouse != null)
+            {
+                // Загружаем товары с выбранного склада
+                availableProducts = await WarehouseService.GetWarehouseProductsAsync(fromWarehouseId);
+            }
+        }
+        else
+        {
+            availableProducts = new();
+        }
+
+        selectedProductId = string.Empty;
+        selectedProduct = null;
+        transferQuantity = 0;
+        StateHasChanged();
+    }
+
+    private void OnProductSelected()
+    {
+        if (!string.IsNullOrEmpty(selectedProductId))
+        {
+            selectedProduct = availableProducts.FirstOrDefault(p => p.Id == selectedProductId);
+            if (selectedProduct != null)
+            {
+                transferQuantity = 1; // Устанавливаем начальное значение
+            }
+        }
+        else
+        {
+            selectedProduct = null;
+            transferQuantity = 0;
+        }
+        StateHasChanged();
+    }
+
+    private async Task CreateTransfer()
+    {
+        if (!CanCreateTransfer || selectedProduct == null || fromWarehouse == null)
+            return;
+
+        var toWarehouse = currentWarehouses.FirstOrDefault(w => w.Id == toWarehouseId);
+        if (toWarehouse == null)
+            return;
+
+        // Создаем запись о перемещении
+        var transfer = new ProductTransfer
+        {
+            ProductId = selectedProduct.Id,
+            ProductName = selectedProduct.Name,
+            FromWarehouseId = fromWarehouseId,
+            FromWarehouseName = fromWarehouse.Name,
+            ToWarehouseId = toWarehouseId,
+            ToWarehouseName = toWarehouse.Name,
+            Quantity = transferQuantity,
+            TransferDate = DateTime.Now,
+            Notes = transferNotes
+        };
+
+        // В реальном приложении здесь был бы вызов сервиса для создания перемещения
+        // Для демонстрации просто обновляем данные
+
+        // Обновляем количество товара на складе-источнике
+        selectedProduct.Quantity -= transferQuantity;
+
+        // Находим товар на складе-назначении или создаем новый
+        var targetProduct = toWarehouse.Products.FirstOrDefault(p => p.Id == selectedProduct.Id);
+        if (targetProduct != null)
+        {
+            targetProduct.Quantity += transferQuantity;
+            targetProduct.UpdatedAt = DateTime.Now;
+        }
+        else
+        {
+            var newProduct = new Product
+            {
+                Id = selectedProduct.Id,
+                Name = selectedProduct.Name,
+                Description = selectedProduct.Description,
+                Category = selectedProduct.Category,
+                Price = selectedProduct.Price,
+                Quantity = transferQuantity,
+                WarehouseId = toWarehouseId,
+                CreatedAt = DateTime.Now
+            };
+            toWarehouse.Products.Add(newProduct);
+        }
+
+        // В реальном приложении здесь был бы вызов сервиса для сохранения изменений
+        // await WarehouseService.CreateProductTransferAsync(transfer);
+
+        // Показываем сообщение об успехе
+        ShowSuccessMessage($"Товар '{selectedProduct.Name}' перемещен со склада '{fromWarehouse.Name}' на склад '{toWarehouse.Name}' в количестве {transferQuantity} единиц");
+
+        // Закрываем модальное окно
+        showCreateOrderModal = false;
+
+        // Обновляем данные
+        StateHasChanged();
+    }
+
+    private void ShowSuccessMessage(string message)
+    {
+        // В реальном приложении здесь можно показать toast-уведомление
+        Console.WriteLine(message);
+        // Можно добавить состояние для показа уведомления в интерфейсе
+    }
+
+    private void CloseCreateOrderModal()
+    {
+        showCreateOrderModal = false;
+    }
+
+    private async Task CreateProduct()
+    {
+        if (string.IsNullOrWhiteSpace(newProductName) ||
+            string.IsNullOrWhiteSpace(newProductCategory) ||
+            newProductPrice <= 0 ||
+            newProductQuantity <= 0 ||
+            string.IsNullOrWhiteSpace(selectedWarehouseId))
+            return;
+
+        var product = new Product
+        {
+            Name = newProductName,
+            Description = newProductDescription,
+            Category = newProductCategory,
+            Price = newProductPrice,
+            Quantity = newProductQuantity,
+            WarehouseId = selectedWarehouseId
+        };
+
+        var result = await WarehouseService.AddProductAsync(product);
+        if (result)
+        {
+            // Обновляем данные складов
+            currentWarehouses = await WarehouseService.GetOrganizationWarehousesAsync(currentOrganization!.Id);
+            organizationWarehouses[currentOrganization.Id] = currentWarehouses;
+            showCreateOrderModal = false;
+            StateHasChanged();
+        }
+    }
+
     // Методы для модального окна информации об организации
     private void ShowOrganizationInfoModal()
     {
@@ -756,9 +1419,194 @@
         }
     }
 
+    // Методы для просмотра остатков склада
+    private void ShowWarehouseProducts(Warehouse warehouse)
+    {
+        selectedWarehouse = warehouse;
+        showWarehouseProductsModal = true;
+    }
+
+    private void CloseWarehouseProductsModal()
+    {
+        showWarehouseProductsModal = false;
+        selectedWarehouse = null;
+    }
+
     // Навигация
     private void OpenWarehouse(string warehouseId)
     {
         Navigation.NavigateTo($"/dashboard/warehouses/{warehouseId}");
     }
+
+    // Методы для номенклатуры
+    private void ShowNomenclatureModal()
+    {
+        showNomenclatureModal = true;
+        nomenclatureSearch = string.Empty;
+        LoadNomenclatureData();
+    }
+
+    private void CloseNomenclatureModal()
+    {
+        showNomenclatureModal = false;
+    }
+
+    private void LoadNomenclatureData()
+    {
+        allNomenclature = new List<NomenclatureItem>();
+
+        // Собираем все товары со всех складов
+        var allProducts = currentWarehouses
+            .SelectMany(w => w.Products.Select(p => new { Product = p, Warehouse = w }))
+            .GroupBy(x => x.Product.Id)
+            .ToList();
+
+        foreach (var productGroup in allProducts)
+        {
+            var firstProduct = productGroup.First().Product;
+            var totalQuantity = productGroup.Sum(x => x.Product.Quantity);
+            var warehouses = productGroup.Select(x => x.Warehouse.Name).ToList();
+
+            allNomenclature.Add(new NomenclatureItem
+            {
+                Id = firstProduct.Id,
+                Name = firstProduct.Name,
+                Description = firstProduct.Description,
+                Category = firstProduct.Category,
+                Price = firstProduct.Price,
+                TotalQuantity = totalQuantity,
+                Warehouses = warehouses
+            });
+        }
+
+        filteredNomenclature = allNomenclature;
+    }
+
+    private void OnNomenclatureSearch()
+    {
+        if (string.IsNullOrWhiteSpace(nomenclatureSearch))
+        {
+            filteredNomenclature = allNomenclature;
+        }
+        else
+        {
+            var searchLower = nomenclatureSearch.ToLower();
+            filteredNomenclature = allNomenclature
+                .Where(item => item.Name.ToLower().Contains(searchLower) ||
+                              item.Category.ToLower().Contains(searchLower) ||
+                              item.Description.ToLower().Contains(searchLower))
+                .ToList();
+        }
+    }
+
+    // Методы для накладных
+    private void ShowInvoicesModal()
+    {
+        showInvoicesModal = true;
+        invoiceSearch = string.Empty;
+        LoadInvoicesData();
+    }
+
+    private void CloseInvoicesModal()
+    {
+        showInvoicesModal = false;
+    }
+
+    private void LoadInvoicesData()
+    {
+        // Тестовые данные для накладных
+        allInvoices = new List<Invoice>
+        {
+            new Invoice
+            {
+                Title = "Накладная №001",
+                Description = "Поступление товара на основной склад",
+                CreatedDate = DateTime.Now.AddDays(-2),
+                ItemsCount = 5,
+                TotalAmount = 154500,
+                Status = "Завершена"
+            },
+            new Invoice
+            {
+                Title = "Накладная №002",
+                Description = "Перемещение между складами",
+                CreatedDate = DateTime.Now.AddDays(-1),
+                ItemsCount = 3,
+                TotalAmount = 89200,
+                Status = "В процессе"
+            },
+            new Invoice
+            {
+                Title = "Накладная №003",
+                Description = "Списание товаров",
+                CreatedDate = DateTime.Now,
+                ItemsCount = 2,
+                TotalAmount = 45700,
+                Status = "Черновик"
+            }
+        };
+
+        filteredInvoices = allInvoices;
+    }
+
+    private void OnInvoiceSearch()
+    {
+        if (string.IsNullOrWhiteSpace(invoiceSearch))
+        {
+            filteredInvoices = allInvoices;
+        }
+        else
+        {
+            var searchLower = invoiceSearch.ToLower();
+            filteredInvoices = allInvoices
+                .Where(invoice => invoice.Title.ToLower().Contains(searchLower) ||
+                                 invoice.Description.ToLower().Contains(searchLower) ||
+                                 invoice.Status.ToLower().Contains(searchLower))
+                .ToList();
+        }
+    }
+
+    private void CreateNewInvoice()
+    {
+        // Логика создания новой накладной
+        var newInvoice = new Invoice
+        {
+            Title = $"Накладная №{allInvoices.Count + 1:000}",
+            Description = "Новая накладная",
+            CreatedDate = DateTime.Now,
+            ItemsCount = 0,
+            TotalAmount = 0,
+            Status = "Черновик"
+        };
+
+        allInvoices.Insert(0, newInvoice);
+        filteredInvoices = allInvoices;
+        StateHasChanged();
+
+        // Можно добавить переход к редактированию накладной
+        Console.WriteLine($"Создана новая накладная: {newInvoice.Title}");
+    }
+
+    private void ViewInvoice(string invoiceId)
+    {
+        var invoice = allInvoices.FirstOrDefault(i => i.Id == invoiceId);
+        if (invoice != null)
+        {
+            // Логика просмотра накладной
+            Console.WriteLine($"Просмотр накладной: {invoice.Title}");
+            // Можно открыть детальное модальное окно для накладной
+        }
+    }
+
+    private string GetInvoiceStatusBadge(string status)
+    {
+        return status switch
+        {
+            "Завершена" => "bg-success",
+            "В процессе" => "bg-warning",
+            "Черновик" => "bg-secondary",
+            _ => "bg-info"
+        };
+    }
+
 }
