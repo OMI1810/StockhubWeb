@@ -2,18 +2,25 @@
 {
     public class Warehouse
     {
-        public string Id { get; set; } = Guid.NewGuid().ToString();
-        public string Name { get; set; } = string.Empty;
+        public string WarehouseId { get; set; } = string.Empty;
         public string OrganizationId { get; set; } = string.Empty;
-        public bool IsActive { get; set; } = true;
-        public DateTime CreatedAt { get; set; } = DateTime.Now;
-
+        public string Name { get; set; } = string.Empty;
         public string Address { get; set; } = string.Empty;
         public string City { get; set; } = string.Empty;
-        public string Region { get; set; } = string.Empty;
+        public string State { get; set; } = string.Empty;
+        public string Zip { get; set; } = string.Empty;
         public string Country { get; set; } = string.Empty;
-        public string PostalCode { get; set; } = string.Empty;
+        public string Status { get; set; } = "ACTIVE";
+        public DateTime CreatedAt { get; set; }
+    }
 
-        public List<Product> Products { get; set; } = new();
+    public class CreateWarehouseModel
+    {
+        public string Name { get; set; } = string.Empty;
+        public string Address { get; set; } = string.Empty;
+        public string City { get; set; } = string.Empty;
+        public string State { get; set; } = string.Empty;
+        public string Zip { get; set; } = string.Empty;
+        public string Country { get; set; } = string.Empty;
     }
 }

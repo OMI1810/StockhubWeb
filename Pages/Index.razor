@@ -21,13 +21,6 @@
                     Зарегистрироваться
                 </button>
             </div>
-
-            <div class="mt-4">
-                <small class="text-muted">
-                    <br>
-                    Сотрудники входят по приглашениям от организаторов
-                </small>
-            </div>
         </div>
     </div>
 </div>
@@ -35,11 +28,11 @@
 @code {
     private void NavigateToLogin()
     {
-        Navigation.NavigateTo("/auth/login", forceLoad: true);
+        Navigation.NavigateTo("/auth/login");
     }
 
     private void NavigateToRegister()
     {
-        Navigation.NavigateTo("/auth/register", forceLoad: true);
+        Navigation.NavigateTo("/auth/register");
     }
 }

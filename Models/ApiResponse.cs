@@ -1,5 +1,4 @@
-﻿// ApiResponse.cs
-namespace StockhubWeb.Models
+﻿namespace StockhubWeb.Models
 {
     public class ApiResponse<T>
     {
@@ -7,13 +6,20 @@ namespace StockhubWeb.Models
         public T? Data { get; set; }
         public string? Message { get; set; }
         public List<string>? Errors { get; set; }
+        public int StatusCode { get; set; }
     }
 
-    public class PaginatedApiResponse<T> : ApiResponse<T>
+    public class AuthResponse
     {
-        public int PageNumber { get; set; }
-        public int PageSize { get; set; }
-        public int TotalPages { get; set; }
-        public int TotalRecords { get; set; }
+        public User? User { get; set; }
+        public string? Message { get; set; }
+    }
+
+    public class ErrorResponse
+    {
+        public int StatusCode { get; set; }
+        public string? Message { get; set; }
+        public string? Error { get; set; }
+        public List<string>? Errors { get; set; }
     }
 }

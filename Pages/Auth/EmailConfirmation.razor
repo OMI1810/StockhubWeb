@@ -1,0 +1,145 @@
+﻿@page "/auth/email-confirmation"
+@using StockhubWeb.Models
+@using StockhubWeb.Services
+@using StockhubWeb.Services.AuthService
+@inject IAuthService AuthService
+@inject NavigationManager Navigation
+
+<div class="auth-container">
+    <div class="auth-card">
+        <div class="auth-header">
+            <h2><i class="fas fa-envelope me-2"></i>Подтверждение Email</h2>
+            <p class="text-muted">Введите код подтверждения из письма</p>
+        </div>
+
+        <div class="auth-body">
+            <div class="alert alert-info mb-4">
+                <i class="fas fa-info-circle me-2"></i>
+                На ваш email было отправлено письмо с кодом подтверждения.
+                Введите этот код ниже для завершения регистрации.
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Код подтверждения *</label>
+                <input @bind="confirmationModel.Token" @oninput="ClearErrors"
+                       class="form-control @(hasError ? "border-danger" : "")"
+                       placeholder="Введите код из письма" />
+                @if (hasError)
+                {
+                    <div class="form-text text-danger">
+                        <i class="fas fa-exclamation-triangle me-1"></i>
+                        @errorMessage
+                    </div>
+                }
+            </div>
+
+            @if (!string.IsNullOrEmpty(successMessage))
+            {
+                <div class="alert alert-success">
+                    @successMessage
+                </div>
+            }
+
+            @if (isLoading)
+            {
+                <button class="btn btn-primary w-100 mb-3" disabled="disabled">
+                    <span class="spinner-border spinner-border-sm me-2"></span>
+                    Подтверждение...
+                </button>
+            }
+            else
+            {
+                <button class="btn btn-primary w-100 mb-3" @onclick="ConfirmEmail">
+                    Подтвердить Email
+                </button>
+            }
+
+            <div class="text-center">
+                <button class="btn btn-link" @onclick="GoToLogin">
+                    Вернуться к входу
+                </button>
+            </div>
+
+            <hr class="my-4" />
+
+            <div class="text-center">
+                <button class="btn btn-link p-0" @onclick="GoBack">
+                    ← Вернуться на главную
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private EmailConfirmationModel confirmationModel = new();
+    private bool isLoading = false;
+    private bool hasError = false;
+    private string errorMessage = string.Empty;
+    private string successMessage = string.Empty;
+
+    private void ClearErrors()
+    {
+        if (hasError)
+        {
+            hasError = false;
+            errorMessage = string.Empty;
+            StateHasChanged();
+        }
+    }
+
+    private async Task ConfirmEmail()
+    {
+        if (string.IsNullOrWhiteSpace(confirmationModel.Token))
+        {
+            hasError = true;
+            errorMessage = "Введите код подтверждения";
+            StateHasChanged();
+            return;
+        }
+
+        isLoading = true;
+        hasError = false;
+        errorMessage = string.Empty;
+        successMessage = string.Empty;
+        StateHasChanged();
+
+        try
+        {
+            var result = await AuthService.ConfirmEmailAsync(confirmationModel);
+
+            if (result.Success && result.Data?.User != null)
+            {
+                successMessage = "Email успешно подтвержден! Вы будете перенаправлены в личный кабинет.";
+
+                // Автоматический переход через 2 секунды
+                await Task.Delay(2000);
+                Navigation.NavigateTo("/dashboard/organization/manage", true);
+            }
+            else
+            {
+                hasError = true;
+                errorMessage = result.Message ?? "Неверный код подтверждения. Проверьте правильность введенного кода.";
+            }
+        }
+        catch (Exception ex)
+        {
+            hasError = true;
+            errorMessage = "Ошибка соединения с сервером";
+            Console.WriteLine($"Ошибка подтверждения email: {ex.Message}");
+        }
+
+        isLoading = false;
+        StateHasChanged();
+    }
+
+    private void GoToLogin()
+    {
+        Navigation.NavigateTo("/auth/login");
+    }
+
+    private void GoBack()
+    {
+        Navigation.NavigateTo("/");
+    }
+}

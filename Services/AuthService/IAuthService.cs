@@ -4,15 +4,12 @@ namespace StockhubWeb.Services.AuthService
 {
     public interface IAuthService
     {
-        Task<bool> LoginUserAsync(LoginModel request);
-        Task<bool> RegisterUserAsync(RegisterModel request);
-        Task<bool> InviteEmployeeAsync(InviteEmployeeModel request);
-        Task<bool> RequestPasswordResetAsync(string email);
-        Task<bool> ResetPasswordAsync(string email, string newPassword);
+        Task<ApiResponse<AuthResponse>> LoginAsync(LoginModel loginModel);
+        Task<ApiResponse<AuthResponse>> RegisterAsync(RegisterModel registerModel);
+        Task<ApiResponse<AuthResponse>> ConfirmEmailAsync(EmailConfirmationModel confirmationModel);
         Task<User?> GetCurrentUserAsync();
         Task<bool> IsAuthenticatedAsync();
         Task LogoutAsync();
-        Task<List<User>> GetOrganizationEmployeesAsync(string organizationId);
-        Task<bool> RemoveEmployeeAsync(string employeeId);
+        Task SetCurrentUserAsync(User user);
     }
 }

@@ -9,7 +9,7 @@
     <div class="auth-card">
         <div class="auth-header">
             <h2><i class="fas fa-user-plus me-2"></i>Регистрация</h2>
-            <p class="text-muted">Создайте аккаунт для работы с системой</p>
+            <p class="text-muted">Создайте новый аккаунт</p>
         </div>
 
         <div class="auth-body">
@@ -17,83 +17,104 @@
                 <div class="col-md-6">
                     <div class="mb-3">
                         <label class="form-label">Имя *</label>
-                        <input @bind="registerModel.FirstName" class="form-control" placeholder="Введите имя" />
-                        @if (HasValidationError("FirstName"))
+                        <input @bind="registerModel.FirstName" @oninput='() => ClearFieldError("firstName")'
+                               class="form-control @(GetFieldClass("firstName"))"
+                               placeholder="Введите имя" />
+                        @if (fieldErrors.ContainsKey("firstName"))
                         {
-                            <div class="text-danger small">@GetValidationError("FirstName")</div>
+                            <div class="form-text text-danger">
+                                <i class="fas fa-exclamation-triangle me-1"></i>
+                                @string.Join(" ", fieldErrors["firstName"])
+                            </div>
                         }
                     </div>
                 </div>
                 <div class="col-md-6">
                     <div class="mb-3">
                         <label class="form-label">Фамилия *</label>
-                        <input @bind="registerModel.LastName" class="form-control" placeholder="Введите фамилию" />
-                        @if (HasValidationError("LastName"))
+                        <input @bind="registerModel.LastName" @oninput='() => ClearFieldError("lastName")'
+                               class="form-control @(GetFieldClass("lastName"))"
+                               placeholder="Введите фамилию" />
+                        @if (fieldErrors.ContainsKey("lastName"))
                         {
-                            <div class="text-danger small">@GetValidationError("LastName")</div>
+                            <div class="form-text text-danger">
+                                <i class="fas fa-exclamation-triangle me-1"></i>
+                                @string.Join(" ", fieldErrors["lastName"])
+                            </div>
                         }
                     </div>
                 </div>
             </div>
 
             <div class="mb-3">
-                <div class="form-check form-switch">
-                    <input class="form-check-input" type="checkbox" @bind="hasNoMiddleName" />
-                    <label class="form-check-label">Нет отчества</label>
-                </div>
+                <label class="form-label">Отчество</label>
+                <input @bind="registerModel.MiddleName" @oninput='() => ClearFieldError("middleName")'
+                       class="form-control @(GetFieldClass("middleName"))"
+                       placeholder="Введите отчество (необязательно)" />
+                @if (fieldErrors.ContainsKey("middleName"))
+                {
+                    <div class="form-text text-danger">
+                        <i class="fas fa-exclamation-triangle me-1"></i>
+                        @string.Join(" ", fieldErrors["middleName"])
+                    </div>
+                }
             </div>
-
-            @if (!hasNoMiddleName)
-            {
-                <div class="mb-3">
-                    <label class="form-label">Отчество</label>
-                    <input @bind="registerModel.MiddleName" class="form-control" placeholder="Введите отчество" />
-                </div>
-            }
 
             <div class="mb-3">
                 <label class="form-label">Email *</label>
-                <input type="email" @bind="registerModel.Email" class="form-control" placeholder="Введите email" />
-                @if (HasValidationError("Email"))
+                <input type="email" @bind="registerModel.Email" @oninput='() => ClearFieldError("email")'
+                       class="form-control @(GetFieldClass("email"))"
+                       placeholder="Введите email" />
+                @if (fieldErrors.ContainsKey("email"))
                 {
-                    <div class="text-danger small">@GetValidationError("Email")</div>
+                    <div class="form-text text-danger">
+                        <i class="fas fa-exclamation-triangle me-1"></i>
+                        @string.Join(" ", fieldErrors["email"])
+                    </div>
                 }
             </div>
 
             <div class="mb-3">
                 <label class="form-label">Пароль *</label>
-                <input type="password" @bind="registerModel.Password" class="form-control"
-                       placeholder="Введите пароль" />
-                @if (HasValidationError("Password"))
+                <input type="password" @bind="registerModel.Password" @oninput='() => ClearFieldError("password")'
+                       class="form-control @(GetFieldClass("password"))"
+                       placeholder="Введите пароль (минимум 8 символов)" />
+                @if (fieldErrors.ContainsKey("password"))
                 {
-                    <div class="text-danger small">@GetValidationError("Password")</div>
+                    <div class="form-text text-danger">
+                        <i class="fas fa-exclamation-triangle me-1"></i>
+                        @string.Join(" ", fieldErrors["password"])
+                    </div>
                 }
-                <small class="form-text text-muted">
-                    Пароль будет проверен на стороне сервера
-                </small>
             </div>
 
             <div class="mb-3">
                 <label class="form-label">Подтверждение пароля *</label>
-                <input type="password" @bind="registerModel.ConfirmPassword" class="form-control" placeholder="Подтвердите пароль" />
-                @if (HasValidationError("ConfirmPassword"))
+                <input type="password" @bind="registerModel.PasswordRepeat" @oninput='() => ClearFieldError("passwordRepeat")'
+                       class="form-control @(GetFieldClass("passwordRepeat"))"
+                       placeholder="Повторите пароль" />
+                @if (fieldErrors.ContainsKey("passwordRepeat"))
                 {
-                    <div class="text-danger small">@GetValidationError("ConfirmPassword")</div>
+                    <div class="form-text text-danger">
+                        <i class="fas fa-exclamation-triangle me-1"></i>
+                        @string.Join(" ", fieldErrors["passwordRepeat"])
+                    </div>
                 }
             </div>
 
-            <!-- Тумблер организатора -->
-            <div class="mb-3">
-                <div class="form-check form-switch">
-                    <input class="form-check-input" type="checkbox" @bind="isOrganizer" />
-                    <label class="form-check-label">
-                        <strong>Стать организатором</strong>
-                    </label>
+            @if (!string.IsNullOrEmpty(generalError))
+            {
+                <div class="alert alert-danger">
+                    @generalError
                 </div>
-                <small class="form-text text-muted">
-                    Организаторы могут создавать организации, управлять складами и приглашать сотрудников
-                </small>
-            </div>
+            }
+
+            @if (!string.IsNullOrEmpty(successMessage))
+            {
+                <div class="alert alert-success">
+                    @successMessage
+                </div>
+            }
 
             @if (isLoading)
             {
@@ -105,19 +126,12 @@
             else
             {
                 <button class="btn btn-primary w-100 mb-3" @onclick="PerformRegistration">
-                    @if (isOrganizer)
-                    {
-                        <text>Зарегистрироваться как организатор</text>
-                    }
-                    else
-                    {
-                        <text>Зарегистрироваться</text>
-                    }
+                    Зарегистрироваться
                 </button>
             }
 
             <div class="text-center">
-                <span class="text-muted">Уже есть аккаунт организатора? </span>
+                <span class="text-muted">Уже есть аккаунт? </span>
                 <a href="/auth/login" class="btn btn-link p-0">
                     Войти в систему
                 </a>
@@ -134,179 +148,190 @@
     </div>
 </div>
 
-@if (showSuccess)
-{
-    <div class="alert alert-success alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3" role="alert">
-        <strong>Успех!</strong> @successMessage
-        <button type="button" class="btn-close" @onclick="DismissSuccess"></button>
-    </div>
-}
-
-@if (showError)
-{
-    <div class="alert alert-danger alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3" role="alert">
-        <strong>Ошибка!</strong> @errorMessage
-        <button type="button" class="btn-close" @onclick="DismissError"></button>
-    </div>
-}
-
 @code {
     private RegisterModel registerModel = new();
     private bool isLoading = false;
-    private bool showError = false;
-    private bool showSuccess = false;
-    private string errorMessage = string.Empty;
+    private string generalError = string.Empty;
     private string successMessage = string.Empty;
-    private bool hasNoMiddleName = false;
-    private bool isOrganizer = false;
-    private Dictionary<string, string> validationErrors = new();
+
+    // Ошибки валидации от сервера
+    private Dictionary<string, List<string>> fieldErrors = new();
 
     protected override void OnInitialized()
     {
         CheckAuthentication();
     }
 
+    private string GetFieldClass(string fieldName)
+    {
+        return fieldErrors.ContainsKey(fieldName) ? "border-danger" : "";
+    }
+
+    private void ClearFieldError(string field)
+    {
+        if (fieldErrors.ContainsKey(field))
+        {
+            fieldErrors.Remove(field);
+            StateHasChanged();
+        }
+    }
+
+    private void ClearGeneralError()
+    {
+        if (!string.IsNullOrEmpty(generalError))
+        {
+            generalError = string.Empty;
+            StateHasChanged();
+        }
+    }
+
+    private void ClearSuccessMessage()
+    {
+        if (!string.IsNullOrEmpty(successMessage))
+        {
+            successMessage = string.Empty;
+            StateHasChanged();
+        }
+    }
+
+    private void ClearAllErrors()
+    {
+        fieldErrors.Clear();
+        generalError = string.Empty;
+        successMessage = string.Empty;
+        StateHasChanged();
+    }
+
     private async void CheckAuthentication()
     {
-        var isAuthenticated = await AuthService.IsAuthenticatedAsync();
-        if (isAuthenticated)
+        try
         {
-            var user = await AuthService.GetCurrentUserAsync();
-            if (user?.Role == UserRole.Organizer)
+            var isAuthenticated = await AuthService.IsAuthenticatedAsync();
+            if (isAuthenticated)
             {
                 Navigation.NavigateTo("/dashboard/organization/manage");
             }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Ошибка проверки аутентификации: {ex.Message}");
         }
     }
 
     private async Task PerformRegistration()
     {
-        if (!ValidateForm())
+        if (string.IsNullOrWhiteSpace(registerModel.FirstName) ||
+            string.IsNullOrWhiteSpace(registerModel.LastName) ||
+            string.IsNullOrWhiteSpace(registerModel.Email) ||
+            string.IsNullOrWhiteSpace(registerModel.Password) ||
+            string.IsNullOrWhiteSpace(registerModel.PasswordRepeat))
+        {
+            generalError = "Заполните все обязательные поля";
             return;
+        }
+
+        if (registerModel.Password != registerModel.PasswordRepeat)
+        {
+            generalError = "Пароли не совпадают";
+            return;
+        }
 
         isLoading = true;
-        showError = false;
-        showSuccess = false;
-
-        // Устанавливаем роль на основе тумблера
-        registerModel.Role = isOrganizer ? UserRole.Organizer : UserRole.Employee;
-        registerModel.HasMiddleName = !hasNoMiddleName;
-
-        if (hasNoMiddleName)
-        {
-            registerModel.MiddleName = null;
-        }
+        ClearAllErrors();
+        StateHasChanged();
 
         try
         {
-            // Отправляем данные на сервер для регистрации
-            var result = await AuthService.RegisterUserAsync(registerModel);
+            var result = await AuthService.RegisterAsync(registerModel);
 
-            if (result)
+            if (result.Success)
             {
-                if (isOrganizer)
-                {
-                    // Редирект на создание организации для организаторов
-                    Navigation.NavigateTo("/dashboard/organization/create");
-                }
-                else
-                {
-                    // Сообщение об успехе для сотрудников
-                    successMessage = "Вы успешно зарегистрировались! Ожидайте приглашения в организацию.";
-                    showSuccess = true;
+                successMessage = result.Data?.Message ?? "Регистрация прошла успешно! Проверьте вашу почту для подтверждения email.";
 
-                    // Автоматический редирект на главную через 3 секунды
-                    await Task.Delay(3000);
-                    Navigation.NavigateTo("/");
-                }
+                // Очищаем форму после успешной регистрации
+                registerModel = new RegisterModel();
+
+                // Автоматический переход на страницу подтверждения email через 3 секунды
+                await Task.Delay(3000);
+                Navigation.NavigateTo("/auth/email-confirmation");
             }
             else
             {
-                errorMessage = "Не удалось зарегистрироваться. Возможно, пользователь с таким email уже существует.";
-                showError = true;
+                // Обрабатываем ошибки от сервера
+                HandleApiErrors(result);
             }
         }
         catch (Exception ex)
         {
-            // Обработка ошибок от бэкенда
-            errorMessage = $"Ошибка регистрации: {ex.Message}";
-            showError = true;
+            generalError = "Ошибка соединения с сервером";
+            Console.WriteLine($"Ошибка регистрации: {ex.Message}");
         }
 
         isLoading = false;
         StateHasChanged();
     }
 
-    private bool ValidateForm()
+    private void HandleApiErrors(ApiResponse<AuthResponse> result)
     {
-        validationErrors.Clear();
+        if (result.Errors != null && result.Errors.Any())
+        {
+            // Распределяем ошибки по полям на основе текста ошибки
+            foreach (var error in result.Errors)
+            {
+                var errorLower = error.ToLower();
 
-        if (string.IsNullOrWhiteSpace(registerModel.FirstName))
-        {
-            validationErrors["FirstName"] = "Введите имя";
+                if (errorLower.Contains("firstname") || errorLower.Contains("имя") || errorLower.Contains("firstName"))
+                {
+                    AddFieldError("firstName", error);
+                }
+                else if (errorLower.Contains("lastname") || errorLower.Contains("фамилия") || errorLower.Contains("lastName"))
+                {
+                    AddFieldError("lastName", error);
+                }
+                else if (errorLower.Contains("middlename") || errorLower.Contains("отчество") || errorLower.Contains("middleName"))
+                {
+                    AddFieldError("middleName", error);
+                }
+                else if (errorLower.Contains("email") || errorLower.Contains("емейл") || errorLower.Contains("почт"))
+                {
+                    AddFieldError("email", error);
+                }
+                else if (errorLower.Contains("password") && errorLower.Contains("repeat") ||
+                         errorLower.Contains("парол") && errorLower.Contains("совпад"))
+                {
+                    AddFieldError("passwordRepeat", error);
+                }
+                else if (errorLower.Contains("password") || errorLower.Contains("парол"))
+                {
+                    AddFieldError("password", error);
+                }
+                else
+                {
+                    generalError = error;
+                }
+            }
         }
-        else if (registerModel.FirstName.Length < 2)
+        else if (!string.IsNullOrEmpty(result.Message))
         {
-            validationErrors["FirstName"] = "Имя должно содержать минимум 2 символа";
+            generalError = result.Message;
         }
+        else
+        {
+            generalError = "Произошла неизвестная ошибка при регистрации";
+        }
+    }
 
-        if (string.IsNullOrWhiteSpace(registerModel.LastName))
+    private void AddFieldError(string field, string error)
+    {
+        if (!fieldErrors.ContainsKey(field))
         {
-            validationErrors["LastName"] = "Введите фамилию";
+            fieldErrors[field] = new List<string>();
         }
-        else if (registerModel.LastName.Length < 2)
-        {
-            validationErrors["LastName"] = "Фамилия должна содержать минимум 2 символа";
-        }
-
-        if (string.IsNullOrWhiteSpace(registerModel.Email))
-        {
-            validationErrors["Email"] = "Введите email";
-        }
-        else if (!Utiles.IsValidEmail(registerModel.Email))
-        {
-            validationErrors["Email"] = "Введите корректный email адрес";
-        }
-
-        if (string.IsNullOrWhiteSpace(registerModel.Password))
-        {
-            validationErrors["Password"] = "Введите пароль";
-        }
-
-        if (string.IsNullOrWhiteSpace(registerModel.ConfirmPassword))
-        {
-            validationErrors["ConfirmPassword"] = "Подтвердите пароль";
-        }
-        else if (registerModel.Password != registerModel.ConfirmPassword)
-        {
-            validationErrors["ConfirmPassword"] = "Пароли не совпадают";
-        }
-
-        return validationErrors.Count == 0;
+        fieldErrors[field].Add(error);
     }
 
     private void GoBack()
     {
         Navigation.NavigateTo("/");
-    }
-
-    private void DismissError()
-    {
-        showError = false;
-    }
-
-    private void DismissSuccess()
-    {
-        showSuccess = false;
-    }
-
-    private bool HasValidationError(string fieldName)
-    {
-        return validationErrors.ContainsKey(fieldName);
-    }
-
-    private string GetValidationError(string fieldName)
-    {
-        return validationErrors.ContainsKey(fieldName) ? validationErrors[fieldName] : string.Empty;
     }
 }

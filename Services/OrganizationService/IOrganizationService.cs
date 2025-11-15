@@ -4,11 +4,11 @@ namespace StockhubWeb.Services.OrganizationService
 {
     public interface IOrganizationService
     {
-        Task<Organization?> GetUserOrganizationAsync(string userId);
-        Task<bool> CreateOrganizationAsync(string name, string ownerId);
-        Task<bool> AddEmployeeToOrganizationAsync(string organizationId, string employeeId);
-        Task<bool> JoinOrganizationAsync(string organizationId, string userId);
-        Task<List<Organization>> GetUserOrganizationsAsync(string userId);
-        Task<Organization?> GetOrganizationByIdAsync(string organizationId);
+        Task<List<Organization>> GetUserOrganizationsAsync();
+        Task<Organization?> CreateOrganizationAsync(string name);
+        Task<bool> SelectOrganizationAsync(string organizationId);
+        Task<Organization?> GetCurrentOrganizationAsync();
+        Task<bool> DeleteOrganizationAsync(string organizationId);
+        Task SetCurrentOrganizationAsync(Organization organization);
     }
 }

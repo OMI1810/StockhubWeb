@@ -8,16 +8,14 @@
 @inject NavigationManager Navigation
 
 <div class="container mt-4">
-    <!-- Заголовок -->
     <div class="text-center mb-5">
         <h1 class="display-5 text-primary">
             <i class="fas fa-building me-2"></i>
             Создание организации
         </h1>
-        <p class="lead text-muted">Создайте свою первую организацию для управления складами и сотрудниками</p>
+        <p class="lead text-muted">Создайте свою первую организацию для управления складами</p>
     </div>
 
-    <!-- Карточка создания организации -->
     <div class="row justify-content-center">
         <div class="col-md-8 col-lg-6">
             <div class="card shadow-lg border-0">
@@ -30,9 +28,22 @@
                 <div class="card-body p-4">
                     <div class="mb-3">
                         <label class="form-label fw-bold">Название организации *</label>
-                        <input @bind="organizationName" class="form-control form-control-lg"
+                        <input @bind="organizationName" class="form-control form-control-lg @(GetFieldClass("name"))"
                                placeholder="Введите название вашей организации" />
+                        @if (fieldErrors.ContainsKey("name"))
+                        {
+                            <div class="form-text text-danger">
+                                @string.Join(" ", fieldErrors["name"])
+                            </div>
+                        }
                     </div>
+
+                    @if (!string.IsNullOrEmpty(generalError))
+                    {
+                        <div class="alert alert-danger">
+                            @generalError
+                        </div>
+                    }
 
                     <button class="btn btn-success w-100 py-2 fw-bold" @onclick="CreateOrganization" disabled="@isLoading">
                         @if (isLoading)
@@ -45,7 +56,7 @@
 
                     <div class="text-center mt-3">
                         <small class="text-muted">
-                            После создания организации вы сможете добавлять склады и приглашать сотрудников
+                            После создания организации вы сможете добавлять склады
                         </small>
                     </div>
                 </div>
@@ -56,35 +67,69 @@
 
 @code {
     private string organizationName = string.Empty;
-    private string organizationPassword = string.Empty;
-    private string confirmPassword = string.Empty;
     private bool isLoading = false;
+    private Dictionary<string, List<string>> fieldErrors = new();
+    private string generalError = string.Empty;
 
     protected override async Task OnInitializedAsync()
     {
-        var user = await AuthService.GetCurrentUserAsync();
-        if (user == null || user.Role != UserRole.Organizer)
+        try
         {
-            Navigation.NavigateTo("/auth/login");
+            // Проверяем авторизацию
+            var isAuthenticated = await AuthService.IsAuthenticatedAsync();
+            if (!isAuthenticated)
+            {
+                Navigation.NavigateTo("/auth/login");
+            }
         }
+        catch (Exception ex)
+        {
+            generalError = "Ошибка проверки авторизации";
+            Console.WriteLine($"Ошибка: {ex.Message}");
+        }
+    }
+
+    private string GetFieldClass(string fieldName)
+    {
+        return fieldErrors.ContainsKey(fieldName) ? "border-danger" : "";
+    }
+
+    private void ClearErrors()
+    {
+        fieldErrors.Clear();
+        generalError = string.Empty;
     }
 
     private async Task CreateOrganization()
     {
-        isLoading = true;
-
-        var user = await AuthService.GetCurrentUserAsync();
-        if (user != null)
+        if (string.IsNullOrWhiteSpace(organizationName))
         {
-            var result = await OrganizationService.CreateOrganizationAsync(
-                organizationName,
-                user.Id
-            );
+            generalError = "Введите название организации";
+            return;
+        }
 
-            if (result)
+        isLoading = true;
+        ClearErrors();
+        StateHasChanged();
+
+        try
+        {
+            var organization = await OrganizationService.CreateOrganizationAsync(organizationName);
+
+            if (organization != null)
             {
+                // Успешное создание - переходим к управлению
                 Navigation.NavigateTo("/dashboard/organization/manage");
             }
+            else
+            {
+                generalError = "Не удалось создать организацию. Проверьте правильность данных.";
+            }
+        }
+        catch (Exception ex)
+        {
+            generalError = "Ошибка при создании организации";
+            Console.WriteLine($"Ошибка: {ex.Message}");
         }
 
         isLoading = false;

@@ -1,5 +1,4 @@
-﻿@* Login.razor *@
-@page "/auth/login"
+﻿@page "/auth/login"
 @using StockhubWeb.Models
 @using StockhubWeb.Services
 @using StockhubWeb.Services.AuthService
@@ -10,24 +9,54 @@
     <div class="auth-card">
         <div class="auth-header">
             <h2><i class="fas fa-sign-in-alt me-2"></i>Вход в систему</h2>
-            <p class="text-muted">Вход доступен только для организаторов</p>
+            <p class="text-muted">Войдите в свой аккаунт</p>
         </div>
 
         <div class="auth-body">
-            <div class="alert alert-warning mb-4">
-                <i class="fas fa-exclamation-triangle me-2"></i>
-                <strong>Внимание!</strong> Веб-версия доступна только для организаторов.
-                Сотрудники могут войти через мобильное приложение.
-            </div>
-
+            <!-- Поле Email -->
             <div class="mb-3">
                 <label class="form-label">Email</label>
-                <input type="email" @bind="email" class="form-control" placeholder="Введите ваш email" />
+                <input type="email" @bind="email" @oninput="OnEmailInput"
+                       class="form-control @(GetFieldClass("email"))"
+                       placeholder="Введите ваш email" />
+
+                @if (fieldErrors.ContainsKey("email"))
+                {
+                    <div class="form-text text-danger">
+                        <i class="fas fa-exclamation-triangle me-1"></i>
+                        @string.Join(" ", fieldErrors["email"])
+                    </div>
+                }
             </div>
 
+            <!-- Поле Пароль -->
             <div class="mb-3">
                 <label class="form-label">Пароль</label>
-                <input type="password" @bind="password" class="form-control" placeholder="Введите пароль" />
+                <input type="password" @bind="password" @oninput="OnPasswordInput"
+                       class="form-control @(GetFieldClass("password"))"
+                       placeholder="Введите пароль" />
+
+                @if (fieldErrors.ContainsKey("password"))
+                {
+                    <div class="form-text text-danger">
+                        <i class="fas fa-exclamation-triangle me-1"></i>
+                        @string.Join(" ", fieldErrors["password"])
+                    </div>
+                }
+            </div>
+
+            @if (!string.IsNullOrEmpty(generalError))
+            {
+                <div class="alert alert-danger">
+                    @generalError
+                </div>
+            }
+
+            <div class="mb-3 text-end">
+                <a href="/auth/forgot-password" class="btn btn-link p-0 text-decoration-none">
+                    <i class="fas fa-key me-1"></i>
+                    Забыли пароль?
+                </a>
             </div>
 
             @if (isLoading)
@@ -40,12 +69,12 @@
             else
             {
                 <button class="btn btn-primary w-100 mb-3" @onclick="PerformLogin">
-                    Войти как организатор
+                    Войти
                 </button>
             }
 
             <div class="text-center">
-                <span class="text-muted">Нет аккаунта организатора? </span>
+                <span class="text-muted">Нет аккаунта? </span>
                 <a href="/auth/register" class="btn btn-link p-0">
                     Зарегистрироваться
                 </a>
@@ -62,41 +91,77 @@
     </div>
 </div>
 
-@if (showError)
-{
-    <div class="alert alert-danger alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3" role="alert">
-        <strong>Ошибка!</strong> @errorMessage
-        <button type="button" class="btn-close" @onclick="DismissError"></button>
-    </div>
-}
-
 @code {
     private string email = string.Empty;
     private string password = string.Empty;
     private bool isLoading = false;
-    private bool showError = false;
-    private string errorMessage = string.Empty;
+    private string generalError = string.Empty;
+
+    // Ошибки валидации от сервера
+    private Dictionary<string, List<string>> fieldErrors = new();
 
     protected override void OnInitialized()
     {
         CheckAuthentication();
     }
 
+    private string GetFieldClass(string fieldName)
+    {
+        return fieldErrors.ContainsKey(fieldName) ? "border-danger" : "";
+    }
+
+    private void OnEmailInput(ChangeEventArgs e)
+    {
+        email = e.Value?.ToString() ?? string.Empty;
+        ClearFieldError("email");
+        ClearGeneralError();
+    }
+
+    private void OnPasswordInput(ChangeEventArgs e)
+    {
+        password = e.Value?.ToString() ?? string.Empty;
+        ClearFieldError("password");
+        ClearGeneralError();
+    }
+
+    private void ClearFieldError(string field)
+    {
+        if (fieldErrors.ContainsKey(field))
+        {
+            fieldErrors.Remove(field);
+            StateHasChanged();
+        }
+    }
+
+    private void ClearGeneralError()
+    {
+        if (!string.IsNullOrEmpty(generalError))
+        {
+            generalError = string.Empty;
+            StateHasChanged();
+        }
+    }
+
+    private void ClearAllErrors()
+    {
+        fieldErrors.Clear();
+        generalError = string.Empty;
+        StateHasChanged();
+    }
+
     private async void CheckAuthentication()
     {
-        var isAuthenticated = await AuthService.IsAuthenticatedAsync();
-        if (isAuthenticated)
+        try
         {
-            var user = await AuthService.GetCurrentUserAsync();
-            if (user?.Role == UserRole.Organizer)
+            var isAuthenticated = await AuthService.IsAuthenticatedAsync();
+            if (isAuthenticated)
             {
                 Navigation.NavigateTo("/dashboard/organization/manage");
             }
-            else
-            {
-                // Если пользователь сотрудник, показываем сообщение
-                ShowEmployeeMessage();
-            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Ошибка проверки аутентификации: {ex.Message}");
         }
     }
 
@@ -104,13 +169,13 @@
     {
         if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(password))
         {
-            errorMessage = "Введите email и пароль";
-            showError = true;
+            generalError = "Заполните все поля";
             return;
         }
 
         isLoading = true;
-        showError = false;
+        ClearAllErrors();
+        StateHasChanged();
 
         var loginModel = new LoginModel
         {
@@ -118,45 +183,72 @@
             Password = password
         };
 
-        var result = await AuthService.LoginUserAsync(loginModel);
-
-        if (result)
+        try
         {
-            var user = await AuthService.GetCurrentUserAsync();
-            if (user?.Role == UserRole.Organizer)
+            var result = await AuthService.LoginAsync(loginModel);
+
+            if (result.Success && result.Data?.User != null)
             {
-                Navigation.NavigateTo("/dashboard/organization/manage");
+                Navigation.NavigateTo("/dashboard/organization/manage", true);
             }
             else
             {
-                // Пользователь сотрудник - показываем сообщение и разлогиниваем
-                await AuthService.LogoutAsync();
-                ShowEmployeeMessage();
+                // Обрабатываем ошибки от сервера
+                HandleApiErrors(result);
             }
         }
-        else
+        catch (Exception ex)
         {
-            errorMessage = "Неверный email или пароль";
-            showError = true;
+            generalError = "Ошибка соединения с сервером";
+            Console.WriteLine($"Ошибка входа: {ex.Message}");
         }
 
         isLoading = false;
         StateHasChanged();
     }
 
-    private void ShowEmployeeMessage()
+    private void HandleApiErrors(ApiResponse<AuthResponse> result)
     {
-        errorMessage = "Доступ к веб-версии разрешен только организаторам. Сотрудники могут войти через мобильное приложение.";
-        showError = true;
+        if (result.Errors != null && result.Errors.Any())
+        {
+            // Распределяем ошибки по полям
+            foreach (var error in result.Errors)
+            {
+                if (error.ToLower().Contains("email") || error.ToLower().Contains("емейл") || error.ToLower().Contains("почт"))
+                {
+                    AddFieldError("email", error);
+                }
+                else if (error.ToLower().Contains("password") || error.ToLower().Contains("парол"))
+                {
+                    AddFieldError("password", error);
+                }
+                else
+                {
+                    generalError = error;
+                }
+            }
+        }
+        else if (!string.IsNullOrEmpty(result.Message))
+        {
+            generalError = result.Message;
+        }
+        else
+        {
+            generalError = "Произошла неизвестная ошибка";
+        }
+    }
+
+    private void AddFieldError(string field, string error)
+    {
+        if (!fieldErrors.ContainsKey(field))
+        {
+            fieldErrors[field] = new List<string>();
+        }
+        fieldErrors[field].Add(error);
     }
 
     private void GoBack()
     {
         Navigation.NavigateTo("/");
-    }
-
-    private void DismissError()
-    {
-        showError = false;
     }
 }
